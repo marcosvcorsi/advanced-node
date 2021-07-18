@@ -1,10 +1,10 @@
 {
   "name": "advanced-node",
   "version": "1.0.0",
-  "description": "",
+  "description": "Advanced node API",
   "main": "index.js",
   "scripts": {
-    "build": "npx rimraf dist && npx tsc",
+    "build": "npx rimraf dist && npx tsc -p tsconfig-build.json",
     "start": "node dist/main/api",
     "lint": "npx eslint ./**/*.ts",
     "lint:fix": "npm run lint -- --fix",
@@ -14,8 +14,11 @@
     "test:coverage": "npm test -- --coverage",
     "prepare": "npx husky install"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "node",
+    "advanced"
+  ],
+  "author": "Marcos Vinicius Corsi",
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "^26.0.24",
