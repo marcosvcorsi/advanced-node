@@ -13,8 +13,45 @@
         "sourceType": "module"
     },
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "eslint-plugin-import-helpers"
     ],
     "rules": {
-    }
+      "no-unused-vars": "off",
+      "no-redeclare": "off",
+      "no-use-before-define": "off",
+      "import/no-unresolved": "error",
+      "class-methods-use-this": "off",
+      "import/prefer-default-export": "off",
+      "no-shadow": "off",
+      "no-console": "off",
+      "@typescript-eslint/no-unused-vars": ["error",  { "argsIgnorePattern": "^_" }],
+      "no-useless-constructor": "off",
+      "no-empty-function": "off",
+      "lines-between-class-members": "off",
+      "import/extensions": [
+        "error",
+        "ignorePackages",
+        {
+            "ts": "never"
+        }
+      ],
+      "import-helpers/order-imports": [
+        "warn",
+        {
+            "newlinesBetween": "always",
+            "groups": ["module", "/^@/", ["parent", "sibling", "index"]],
+            "alphabetize": { "order": "asc", "ignoreCase": true }
+        }
+      ],
+      "import/no-extraneous-dependencies": [
+          "error",
+          { "devDependencies": ["**/*.spec.ts", "**/*.test.ts"] }
+      ]
+    },
+    "settings": {
+      "import/resolver": {
+          "typescript": {}
+      }
+  }
 }
