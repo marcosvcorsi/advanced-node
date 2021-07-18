@@ -3,11 +3,13 @@ import { FacebookAuthenticationService } from '@/data/services';
 import { AuthenticationError } from '@/domain/errors';
 
 class LoadFacebookUserApiSpy implements LoadFacebookUserApi {
+  callsCount = 0;
   token?: string;
   result?: any;
 
   async loadUser({ token }: LoadFacebookUserApi.Params): Promise<void> {
     this.token = token;
+    this.callsCount++;
 
     return this.result;
   }
@@ -24,6 +26,7 @@ describe('FacebookAuthenticationService', () => {
     await sut.perform({ token });
 
     expect(loadFacebookUserApi.token).toBe(token);
+    expect(loadFacebookUserApi.callsCount).toBe(1);
   });
 
   it('should return Authentication error when LoadFacebookUserApi returns falsy', async () => {
