@@ -1,5 +1,5 @@
 import { LoadFacebookUserApi } from '@/data/contracts/apis';
-import { LoadUserAccountRepository } from '@/data/contracts/repositories';
+import { CreateFacebookAccountRepository, LoadUserAccountRepository } from '@/data/contracts/repositories';
 import { AuthenticationError } from '@/domain/errors';
 import { FacebookAuthentication } from '@/domain/features';
 
@@ -7,6 +7,7 @@ export class FacebookAuthenticationService {
   constructor(
     private readonly loadFacebookUserByTokenApi: LoadFacebookUserApi,
     private readonly loadUserAccountRepository: LoadUserAccountRepository,
+    private readonly createFacebookAccountRepository: CreateFacebookAccountRepository,
   ) {}
 
   async perform({ token } : FacebookAuthentication.Params): Promise<any> {
@@ -16,7 +17,15 @@ export class FacebookAuthenticationService {
       return new AuthenticationError();
     }
 
-    await this.loadUserAccountRepository.load({ email: fbData.email });
+    const { email, name, facebookId } = fbData;
+
+    await this.loadUserAccountRepository.load({ email });
+
+    await this.createFacebookAccountRepository.createFromFacebook({
+      email,
+      name,
+      facebookId,
+    });
 
     return fbData;
   }
