@@ -8,7 +8,10 @@ export namespace LoadUserAccountRepository {
     email: string
   }
 
-  export type Result = any;
+  export type Result = undefined | {
+    id: string;
+    name?: string;
+  };
 }
 
 export interface CreateFacebookAccountRepository {
@@ -20,6 +23,21 @@ export namespace CreateFacebookAccountRepository {
   export type Params = {
     name: string
     email: string
+    facebookId: string
+  }
+
+  export type Result = any;
+}
+
+export interface UpdateFacebookAccountRepository {
+  updateWithFacebook: (params: UpdateFacebookAccountRepository.Params)
+    => Promise<UpdateFacebookAccountRepository.Result>;
+}
+
+export namespace UpdateFacebookAccountRepository {
+  export type Params = {
+    id: string
+    name: string
     facebookId: string
   }
 
