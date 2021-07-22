@@ -2,6 +2,7 @@ import { LoadFacebookUserApi } from '@/data/contracts/apis';
 import { SaveFacebookAccountRepository, LoadUserAccountRepository } from '@/data/contracts/repositories';
 import { AuthenticationError } from '@/domain/errors';
 import { FacebookAuthentication } from '@/domain/features';
+import { FacebookAccount } from '@/domain/models';
 
 export class FacebookAuthenticationService {
   constructor(
@@ -17,16 +18,11 @@ export class FacebookAuthenticationService {
       return new AuthenticationError();
     }
 
-    const { email, name, facebookId } = fbData;
+    const userAccountData = await this.userAccountRepository.load({ email: fbData.email });
 
-    const userAccountData = await this.userAccountRepository.load({ email });
+    const fbAccount = new FacebookAccount(fbData, userAccountData);
 
-    await this.userAccountRepository.saveWithFacebook({
-      id: userAccountData?.id,
-      name: userAccountData?.name ?? name,
-      email: fbData.email,
-      facebookId,
-    });
+    await this.userAccountRepository.saveWithFacebook(fbAccount);
 
     return fbData;
   }
