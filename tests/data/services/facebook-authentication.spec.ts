@@ -17,6 +17,7 @@ describe('FacebookAuthenticationService', () => {
     SaveFacebookAccountRepository
   >;
   let crypto: MockProxy<TokenGenerator>;
+
   let sut: FacebookAuthenticationService;
 
   const token = 'any_token';
@@ -27,7 +28,7 @@ describe('FacebookAuthenticationService', () => {
     crypto = mock();
 
     userAccountRepository.load.mockResolvedValue(undefined);
-    userAccountRepository.saveWithFacebook.mockResolvedValueOnce({ id: 'any_id' });
+    userAccountRepository.saveWithFacebook.mockResolvedValue({ id: 'any_id' });
 
     facebookApi.loadUser.mockResolvedValue({
       name: 'any_name',
@@ -95,5 +96,29 @@ describe('FacebookAuthenticationService', () => {
     const result = await sut.perform({ token });
 
     expect(result).toEqual(new AccessToken('any_generated_token'));
+  });
+
+  it('should throw if LoadFacebookApi throws', async () => {
+    facebookApi.loadUser.mockRejectedValueOnce(new Error('fb_error'));
+
+    await expect(sut.perform({ token })).rejects.toThrow(new Error('fb_error'));
+  });
+
+  it('should throw if LoadUserAccountRepository throws', async () => {
+    userAccountRepository.load.mockRejectedValueOnce(new Error('load_error'));
+
+    await expect(sut.perform({ token })).rejects.toThrow(new Error('load_error'));
+  });
+
+  it('should throw if SaveFacebookAccountRepository throws', async () => {
+    userAccountRepository.saveWithFacebook.mockRejectedValueOnce(new Error('save_error'));
+
+    await expect(sut.perform({ token })).rejects.toThrow(new Error('save_error'));
+  });
+
+  it('should throw if TokenGenerator throws', async () => {
+    crypto.generateToken.mockRejectedValueOnce(new Error('generation_error'));
+
+    await expect(sut.perform({ token })).rejects.toThrow(new Error('generation_error'));
   });
 });
