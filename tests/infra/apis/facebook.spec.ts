@@ -7,12 +7,21 @@ class FacebookApi {
 
   constructor(
     private readonly httpClient: HttpGetClient,
+    private readonly clientId: string,
+    private readonly clientSecret: string,
   ) { }
 
   async loadUser(params: LoadFacebookUserApi.Params): Promise<void> {
     console.log(params);
 
-    await this.httpClient.get({ url: `${this.baseUrl}/oauth/access_token` });
+    await this.httpClient.get({
+      url: `${this.baseUrl}/oauth/access_token`,
+      params: {
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+        grant_type: 'client_credentials',
+      },
+    });
   }
 }
 
@@ -22,23 +31,30 @@ interface HttpGetClient {
 
 namespace HttpGetClient {
   export type Params = {
-    url: string
+    url: string;
+    params: object;
   }
 
   export type Result = void
 }
 
 describe('FacebookApi', () => {
+  let clientId: string;
+  let clientSecret: string;
+
   let httpClient: MockProxy<HttpGetClient>;
 
   let sut: FacebookApi;
 
   beforeAll(() => {
+    clientId = 'any_client_token';
+    clientSecret = 'any_client_secret';
+
     httpClient = mock<HttpGetClient>();
   });
 
   beforeEach(() => {
-    sut = new FacebookApi(httpClient);
+    sut = new FacebookApi(httpClient, clientId, clientSecret);
   });
 
   it('should get app token', async () => {
@@ -46,6 +62,11 @@ describe('FacebookApi', () => {
 
     expect(httpClient.get).toHaveBeenCalledWith({
       url: 'https://graph.facebook.com/oauth/access_token',
+      params: {
+        client_id: clientId,
+        client_secret: clientSecret,
+        grant_type: 'client_credentials',
+      },
     });
   });
 });
