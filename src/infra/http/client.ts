@@ -8,5 +8,5 @@ export namespace HttpGetClient {
     params: object;
   }
 
-  export type Result = void
+  export type Result = any
 }
