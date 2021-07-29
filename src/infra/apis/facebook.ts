@@ -1,6 +1,16 @@
 import { LoadFacebookUserApi } from '@/data/contracts/apis';
 import { HttpGetClient } from '@/infra/http';
 
+type AppToken = {
+  access_token: string;
+}
+
+type DebugToken = {
+  data: {
+    user_id: string
+  }
+}
+
 export class FacebookApi implements LoadFacebookUserApi {
   private readonly baseUrl = 'https://graph.facebook.com';
 
@@ -10,8 +20,22 @@ export class FacebookApi implements LoadFacebookUserApi {
     private readonly clientSecret: string,
   ) { }
 
-  async loadUser(params: LoadFacebookUserApi.Params): Promise<LoadFacebookUserApi.Result> {
-    const appToken = await this.httpClient.get({
+  async loadUser({ token }: LoadFacebookUserApi.Params): Promise<LoadFacebookUserApi.Result> {
+    const {
+      id: facebookId,
+      name,
+      email,
+    } = await this.getUserInfo(token);
+
+    return {
+      facebookId,
+      name,
+      email,
+    };
+  }
+
+  private async getAppToken(): Promise<AppToken> {
+    return this.httpClient.get<AppToken>({
       url: `${this.baseUrl}/oauth/access_token`,
       params: {
         client_id: this.clientId,
@@ -19,27 +43,29 @@ export class FacebookApi implements LoadFacebookUserApi {
         grant_type: 'client_credentials',
       },
     });
+  }
 
-    const debugToken = await this.httpClient.get({
+  private async getDebugToken(clientToken: string): Promise<DebugToken> {
+    const { access_token } = await this.getAppToken();
+
+    return this.httpClient.get<DebugToken>({
       url: `${this.baseUrl}/oauth/debug_token`,
       params: {
-        access_token: appToken.access_token,
-        input_token: params.token,
+        access_token,
+        input_token: clientToken,
       },
     });
+  }
 
-    const userInfo = await this.httpClient.get({
-      url: `${this.baseUrl}/oauth/${debugToken.data.user_id}`,
+  private async getUserInfo(clientToken: string): Promise<any> {
+    const { data: { user_id } } = await this.getDebugToken(clientToken);
+
+    return this.httpClient.get({
+      url: `${this.baseUrl}/oauth/${user_id}`,
       params: {
-        fields: 'id,name,email',
-        access_token: params.token,
+        fields: ['id', 'name', 'email'].join(','),
+        access_token: clientToken,
       },
     });
-
-    return {
-      facebookId: userInfo.id,
-      name: userInfo.name,
-      email: userInfo.email,
-    };
   }
 }

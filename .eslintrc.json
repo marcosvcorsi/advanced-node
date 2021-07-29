@@ -21,6 +21,7 @@
       "no-redeclare": "off",
       "no-use-before-define": "off",
       "no-plusplus": "off",
+      "camelcase": "off",
       "import/no-unresolved": "error",
       "class-methods-use-this": "off",
       "import/prefer-default-export": "off",
