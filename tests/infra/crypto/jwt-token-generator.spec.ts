@@ -12,9 +12,9 @@ class JwtTokenGenerator implements TokenGenerator {
 
     const expiresInSeconds = expirationInMs / 1000;
 
-    jwt.sign({ key }, this.secret, { expiresIn: expiresInSeconds });
+    const token = jwt.sign({ key }, this.secret, { expiresIn: expiresInSeconds });
 
-    return '';
+    return token;
   }
 }
 
@@ -35,6 +35,8 @@ describe('JwtTokenGenerator', () => {
     key = 'any_key';
     expirationInMs = 1000;
     secret = 'any_secret';
+
+    fakeJwt.sign.mockImplementation(() => 'any_token');
   });
 
   beforeEach(() => {
@@ -46,5 +48,11 @@ describe('JwtTokenGenerator', () => {
 
     expect(fakeJwt.sign).toHaveBeenCalledWith({ key }, secret, { expiresIn: 1 });
     expect(fakeJwt.sign).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return a token', async () => {
+    const result = await sut.generateToken({ key, expirationInMs });
+
+    expect(result).toBe('any_token');
   });
 });
