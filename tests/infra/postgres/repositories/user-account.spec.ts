@@ -1,7 +1,8 @@
-import { newDb } from 'pg-mem';
+import { IBackup, newDb } from 'pg-mem';
 import {
   Column,
   Entity,
+  getConnection,
   getRepository,
   PrimaryGeneratedColumn,
   Repository,
@@ -27,7 +28,7 @@ class PgUserAccountRepository implements LoadUserAccountRepository {
     }
 
     return {
-      id: pgUser.id.toString(),
+      id: String(pgUser.id),
       name: pgUser.name,
     };
   }
@@ -52,6 +53,8 @@ describe('PgUserAccountRepository', () => {
   let pgUserRepository: Repository<PgUser>;
   let sut: PgUserAccountRepository;
 
+  let backup: IBackup;
+
   beforeAll(async () => {
     const db = newDb();
     const connection = await db.adapters.createTypeormConnection({
@@ -59,26 +62,39 @@ describe('PgUserAccountRepository', () => {
       entities: [PgUser],
     });
 
-    // create schema
     await connection.synchronize();
 
-    pgUserRepository = getRepository(PgUser);
+    backup = db.backup();
 
-    await pgUserRepository.save({ email: 'existing_email@mail.com' });
+    pgUserRepository = getRepository(PgUser);
+  });
+
+  afterAll(() => {
+    getConnection().close();
   });
 
   beforeEach(() => {
+    backup.restore();
+
     sut = new PgUserAccountRepository();
   });
 
   describe('load()', () => {
     it('should return an account when email exists', async () => {
+      await pgUserRepository.save({ email: 'existing_email@mail.com' });
+
       const account = await sut.load({ email: 'existing_email@mail.com' });
 
       expect(account).toEqual({
         id: '1',
         name: null,
       });
+    });
+
+    it('should return undefined when email doest not exists', async () => {
+      const account = await sut.load({ email: 'new_email@mail.com' });
+
+      expect(account).toBeUndefined();
     });
   });
 });
