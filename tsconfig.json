@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
     "target": "es2020",
     "sourceMap": true,
     "skipDefaultLibCheck": true,
