@@ -39,16 +39,28 @@ describe('PgUserAccountRepository', () => {
 
       const account = await sut.load({ email: 'existing_email@mail.com' });
 
-      expect(account).toEqual({
-        id: '1',
-        name: null,
-      });
+      expect(account).toHaveProperty('id');
+      expect(account).toHaveProperty('name');
     });
 
     it('should return undefined when email doest not exists', async () => {
       const account = await sut.load({ email: 'new_email@mail.com' });
 
       expect(account).toBeUndefined();
+    });
+  });
+
+  describe('saveWithFacebok()', () => {
+    it('should create an account when id is not passed', async () => {
+      await sut.saveWithFacebook({
+        email: 'any_mail@mail.com',
+        name: 'any_name',
+        facebookId: 'any_fb_id',
+      });
+
+      const pgUser = await pgUserRepository.findOne({ email: 'any_mail@mail.com' });
+
+      expect(pgUser?.id).toBeDefined();
     });
   });
 });
