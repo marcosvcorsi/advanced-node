@@ -1,53 +1,24 @@
-import { IBackup, newDb } from 'pg-mem';
+import { IBackup, IMemoryDb, newDb } from 'pg-mem';
 import {
-  Column,
-  Entity,
   getConnection,
   getRepository,
-  PrimaryGeneratedColumn,
   Repository,
 } from 'typeorm';
 
-import { LoadUserAccountRepository } from '@/data/contracts/repositories';
+import { PgUser } from '@/infra/postgres/entities';
+import { PgUserAccountRepository } from '@/infra/postgres/repositories';
 
-class PgUserAccountRepository implements LoadUserAccountRepository {
-  private pgUserRepository: Repository<PgUser>;
+const makeInMemoryDb = async (entities: any[] = []): Promise<IMemoryDb> => {
+  const db = newDb();
+  const connection = await db.adapters.createTypeormConnection({
+    type: 'postgres',
+    entities,
+  });
 
-  constructor() {
-    this.pgUserRepository = getRepository(PgUser);
-  }
+  await connection.synchronize();
 
-  async load({ email }: LoadUserAccountRepository.Params):
-    Promise<LoadUserAccountRepository.Result> {
-    const pgUser = await this.pgUserRepository.findOne({
-      email,
-    });
-
-    if (!pgUser) {
-      return undefined;
-    }
-
-    return {
-      id: String(pgUser.id),
-      name: pgUser.name,
-    };
-  }
-}
-
-@Entity('users')
-class PgUser {
-  @PrimaryGeneratedColumn()
-  id!: number;
-
-  @Column({ nullable: true })
-  name?: string;
-
-  @Column()
-  email!: string;
-
-  @Column({ name: 'facebook_id', nullable: true })
-  facebookId?: string;
-}
+  return db;
+};
 
 describe('PgUserAccountRepository', () => {
   let pgUserRepository: Repository<PgUser>;
@@ -56,13 +27,7 @@ describe('PgUserAccountRepository', () => {
   let backup: IBackup;
 
   beforeAll(async () => {
-    const db = newDb();
-    const connection = await db.adapters.createTypeormConnection({
-      type: 'postgres',
-      entities: [PgUser],
-    });
-
-    await connection.synchronize();
+    const db = await makeInMemoryDb([PgUser]);
 
     backup = db.backup();
 
