@@ -31,11 +31,13 @@ describe('FacebookLoginController', () => {
 
   let sut: FacebookLoginController;
 
-  beforeEach(() => {
+  beforeAll(() => {
     token = 'any_token';
 
     facebookAuthentication = mock();
+  });
 
+  beforeEach(() => {
     sut = new FacebookLoginController(
       facebookAuthentication,
     );
