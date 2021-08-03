@@ -2,7 +2,7 @@ export class AccessToken {
   static EXPIRATION_IN_MINUTES = 30;
 
   constructor(
-    private readonly value: string,
+    readonly value: string,
   ) {}
 
   static get expirationInMs(): number {
