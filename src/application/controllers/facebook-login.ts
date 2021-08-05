@@ -6,7 +6,7 @@ import { AuthenticationError } from '@/domain/errors';
 import { FacebookAuthentication } from '@/domain/features';
 
 type HttpRequest = {
-  token: string | undefined | null;
+  token: string;
 }
 
 type Result = Error | {
@@ -20,11 +20,13 @@ export class FacebookLoginController {
 
   async handle(httpRequest: HttpRequest): Promise<HttpResponse<Result>> {
     try {
-      const { token } = httpRequest;
+      const error = this.validate(httpRequest);
 
-      if (!token) {
-        return badRequest(new RequiredFieldError('token'));
+      if (error) {
+        return badRequest(error);
       }
+
+      const { token } = httpRequest;
 
       const result = await this.facebookAuthentication.perform({ token });
 
@@ -38,5 +40,13 @@ export class FacebookLoginController {
     } catch (error) {
       return serverError(error);
     }
+  }
+
+  private validate({ token }: HttpRequest): Error | undefined {
+    if (!token) {
+      return new RequiredFieldError('token');
+    }
+
+    return undefined;
   }
 }
