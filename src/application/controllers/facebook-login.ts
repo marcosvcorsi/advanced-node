@@ -5,12 +5,20 @@ import {
 import { AuthenticationError } from '@/domain/errors';
 import { FacebookAuthentication } from '@/domain/features';
 
+type HttpRequest = {
+  token: string | undefined | null;
+}
+
+type Result = Error | {
+  accessToken: string
+}
+
 export class FacebookLoginController {
   constructor(
     private readonly facebookAuthentication: FacebookAuthentication,
   ) {}
 
-  async handle(httpRequest: any): Promise<HttpResponse> {
+  async handle(httpRequest: HttpRequest): Promise<HttpResponse<Result>> {
     try {
       const { token } = httpRequest;
 
