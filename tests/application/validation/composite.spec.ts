@@ -57,4 +57,14 @@ describe('ValidationComposite', () => {
 
     expect(result).toEqual(error);
   });
+
+  it('should return the last error', () => {
+    const error = new Error('last_error');
+
+    validator2.validate.mockReturnValueOnce(error);
+
+    const result = sut.validate();
+
+    expect(result).toEqual(error);
+  });
 });
