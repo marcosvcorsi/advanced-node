@@ -1,11 +1,9 @@
 import {
   badRequest, HttpResponse, ok, serverError, unauthorized,
 } from '@/application/helpers';
+import { ValidationComposite, ValidationBuilder } from '@/application/validation';
 import { AuthenticationError } from '@/domain/errors';
 import { FacebookAuthentication } from '@/domain/features';
-
-import { ValidationComposite } from '../validation';
-import { ValidationBuilder } from '../validation/builder';
 
 type HttpRequest = {
   token: string;
