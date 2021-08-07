@@ -1,7 +1,8 @@
+import { Controller } from '@/application/controllers';
 import {
-  badRequest, HttpResponse, ok, serverError, unauthorized,
+  HttpResponse, ok, unauthorized,
 } from '@/application/helpers';
-import { ValidationComposite, ValidationBuilder } from '@/application/validation';
+import { ValidationBuilder, Validator } from '@/application/validation';
 import { AuthenticationError } from '@/domain/errors';
 import { FacebookAuthentication } from '@/domain/features';
 
@@ -13,37 +14,29 @@ type Result = Error | {
   accessToken: string
 }
 
-export class FacebookLoginController {
+export class FacebookLoginController extends Controller<HttpRequest> {
   constructor(
     private readonly facebookAuthentication: FacebookAuthentication,
-  ) {}
-
-  async handle(httpRequest: HttpRequest): Promise<HttpResponse<Result>> {
-    try {
-      const error = this.validate(httpRequest);
-
-      if (error) {
-        return badRequest(error);
-      }
-
-      const { token } = httpRequest;
-
-      const result = await this.facebookAuthentication.perform({ token });
-
-      if (result instanceof AuthenticationError) {
-        return unauthorized();
-      }
-
-      return ok({
-        accessToken: result.value,
-      });
-    } catch (error) {
-      return serverError(error);
-    }
+  ) {
+    super();
   }
 
-  private validate({ token }: HttpRequest): Error | undefined {
-    const validators = [
+  async perform(httpRequest: HttpRequest): Promise<HttpResponse<Result>> {
+    const { token } = httpRequest;
+
+    const result = await this.facebookAuthentication.perform({ token });
+
+    if (result instanceof AuthenticationError) {
+      return unauthorized();
+    }
+
+    return ok({
+      accessToken: result.value,
+    });
+  }
+
+  buildValidators({ token }: HttpRequest): Validator[] {
+    return [
       ...ValidationBuilder
         .of({
           value: token,
@@ -52,9 +45,5 @@ export class FacebookLoginController {
         .required()
         .build(),
     ];
-
-    const validator = new ValidationComposite(validators);
-
-    return validator.validate();
   }
 }

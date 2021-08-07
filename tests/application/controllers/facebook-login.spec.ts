@@ -1,9 +1,8 @@
 import { mock, MockProxy } from 'jest-mock-extended';
-import { mocked } from 'ts-jest/utils';
 
 import { FacebookLoginController } from '@/application/controllers';
-import { ServerError, UnauthorizedError } from '@/application/errors';
-import { RequiredStringValidator, ValidationComposite } from '@/application/validation';
+import { UnauthorizedError } from '@/application/errors';
+import { RequiredStringValidator } from '@/application/validation';
 import { AuthenticationError } from '@/domain/errors';
 import { FacebookAuthentication } from '@/domain/features';
 import { AccessToken } from '@/domain/models';
@@ -31,24 +30,12 @@ describe('FacebookLoginController', () => {
     );
   });
 
-  it('should return 400 if validator fails', async () => {
-    const error = new Error('any_error');
+  it('should build Validators correctly', async () => {
+    const validators = sut.buildValidators({ token: '' });
 
-    const ValidationCompositeSpy = jest.fn().mockImplementationOnce(() => ({
-      validate: jest.fn().mockReturnValueOnce(error),
-    }));
-
-    mocked(ValidationComposite).mockImplementationOnce(ValidationCompositeSpy);
-
-    const httpResponse = await sut.handle({ token: '' });
-
-    expect(ValidationComposite).toHaveBeenCalledWith([
+    expect(validators).toEqual([
       new RequiredStringValidator('', 'token'),
     ]);
-    expect(httpResponse).toEqual({
-      statusCode: 400,
-      data: error,
-    });
   });
 
   it('should call FacebookAuthentication with correct params', async () => {
@@ -79,19 +66,6 @@ describe('FacebookLoginController', () => {
       data: {
         accessToken: 'any_value',
       },
-    });
-  });
-
-  it('should return 500 if Authentication throws', async () => {
-    const error = new Error('any_error');
-
-    facebookAuthentication.perform.mockRejectedValue(new Error('any_error'));
-
-    const httpResponse = await sut.handle({ token });
-
-    expect(httpResponse).toEqual({
-      statusCode: 500,
-      data: new ServerError(error),
     });
   });
 });
