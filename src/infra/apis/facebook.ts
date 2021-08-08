@@ -49,7 +49,7 @@ export class FacebookApi implements LoadFacebookUserApi {
     const { access_token } = await this.getAppToken();
 
     return this.httpClient.get<DebugToken>({
-      url: `${this.baseUrl}/oauth/debug_token`,
+      url: `${this.baseUrl}/debug_token`,
       params: {
         access_token,
         input_token: clientToken,
@@ -61,7 +61,7 @@ export class FacebookApi implements LoadFacebookUserApi {
     const { data: { user_id } } = await this.getDebugToken(clientToken);
 
     return this.httpClient.get({
-      url: `${this.baseUrl}/oauth/${user_id}`,
+      url: `${this.baseUrl}/${user_id}`,
       params: {
         fields: ['id', 'name', 'email'].join(','),
         access_token: clientToken,
