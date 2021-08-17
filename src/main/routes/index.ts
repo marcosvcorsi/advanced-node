@@ -11,5 +11,5 @@ export const setupRoutes = (app: Express) => {
       (await import(`./${file}`)).default(router);
     });
 
-  app.use(router);
+  app.use('/api', router);
 };
