@@ -23,8 +23,8 @@ describe('PgUserAccountRepository', () => {
     pgUserRepository = getRepository(PgUser);
   });
 
-  afterAll(() => {
-    getConnection().close();
+  afterAll(async () => {
+    await getConnection().close();
   });
 
   beforeEach(() => {
