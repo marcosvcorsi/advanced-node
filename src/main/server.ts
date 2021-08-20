@@ -10,4 +10,5 @@ import { connectionOptions } from '@/main/config/database';
 import { env } from '@/main/config/env';
 
 createConnection(connectionOptions)
-  .then(() => app.listen(env.port, () => console.log(`Server is running at ${env.port}`)));
+  .then(() => app.listen(env.port, () => console.log(`Server is running at ${env.port}`)))
+  .catch(console.error);
