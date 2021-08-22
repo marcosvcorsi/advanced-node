@@ -4,7 +4,7 @@ import {
 import { mock, MockProxy } from 'jest-mock-extended';
 
 import { Controller } from '@/application/controllers';
-import { adaptExpressRouter } from '@/infra/http';
+import { adaptExpressRouter } from '@/main/adapters';
 import { getMockReq, getMockRes } from '@jest-mock/express';
 
 describe('ExpressRouter', () => {

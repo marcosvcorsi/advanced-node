@@ -3,7 +3,6 @@ import {
   HttpResponse, ok, unauthorized,
 } from '@/application/helpers';
 import { ValidationBuilder, Validator } from '@/application/validation';
-import { AuthenticationError } from '@/domain/errors';
 import { FacebookAuthentication } from '@/domain/use-cases';
 
 type HttpRequest = {
@@ -22,17 +21,15 @@ export class FacebookLoginController extends Controller<HttpRequest> {
   }
 
   async perform(httpRequest: HttpRequest): Promise<HttpResponse<Result>> {
-    const { token } = httpRequest;
+    try {
+      const { token } = httpRequest;
 
-    const result = await this.facebookAuthentication({ token });
+      const accessToken = await this.facebookAuthentication({ token });
 
-    if (result instanceof AuthenticationError) {
+      return ok(accessToken);
+    } catch {
       return unauthorized();
     }
-
-    return ok({
-      accessToken: result.value,
-    });
   }
 
   buildValidators({ token }: HttpRequest): Validator[] {
