@@ -4,7 +4,7 @@ import {
 } from '@/application/helpers';
 import { ValidationBuilder, Validator } from '@/application/validation';
 import { AuthenticationError } from '@/domain/errors';
-import { FacebookAuthentication } from '@/domain/features';
+import { FacebookAuthentication } from '@/domain/use-cases';
 
 type HttpRequest = {
   token: string;
@@ -24,7 +24,7 @@ export class FacebookLoginController extends Controller<HttpRequest> {
   async perform(httpRequest: HttpRequest): Promise<HttpResponse<Result>> {
     const { token } = httpRequest;
 
-    const result = await this.facebookAuthentication.perform({ token });
+    const result = await this.facebookAuthentication({ token });
 
     if (result instanceof AuthenticationError) {
       return unauthorized();

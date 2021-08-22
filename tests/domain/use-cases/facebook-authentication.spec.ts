@@ -6,11 +6,11 @@ import { TokenGenerator } from '@/domain/contracts/crypto';
 import { SaveFacebookAccountRepository, LoadUserAccountRepository } from '@/domain/contracts/repositories';
 import { AccessToken, FacebookAccount } from '@/domain/entities';
 import { AuthenticationError } from '@/domain/errors';
-import { FacebookAuthenticationUseCase } from '@/domain/use-cases';
+import { FacebookAuthentication, setupFacebookAuthentication } from '@/domain/use-cases';
 
 jest.mock('@/domain/entities/facebook-account');
 
-describe('FacebookAuthenticationUseCase', () => {
+describe('FacebookAuthentication', () => {
   let facebookApi: MockProxy<LoadFacebookUserApi>;
   let userAccountRepository: MockProxy<
     LoadUserAccountRepository &
@@ -19,7 +19,7 @@ describe('FacebookAuthenticationUseCase', () => {
   let crypto: MockProxy<TokenGenerator>;
   let token: string;
 
-  let sut: FacebookAuthenticationUseCase;
+  let sut: FacebookAuthentication;
 
   beforeAll(() => {
     token = 'any_token';
@@ -41,7 +41,7 @@ describe('FacebookAuthenticationUseCase', () => {
   });
 
   beforeEach(() => {
-    sut = new FacebookAuthenticationUseCase(
+    sut = setupFacebookAuthentication(
       facebookApi,
       userAccountRepository,
       crypto,
@@ -49,7 +49,7 @@ describe('FacebookAuthenticationUseCase', () => {
   });
 
   it('should call LoadFacebookUserApi with correct params', async () => {
-    await sut.perform({ token });
+    await sut({ token });
 
     expect(facebookApi.loadUser).toHaveBeenCalledWith({ token });
     expect(facebookApi.loadUser).toHaveBeenCalledTimes(1);
@@ -58,13 +58,13 @@ describe('FacebookAuthenticationUseCase', () => {
   it('should return Authentication error when LoadFacebookUserApi returns falsy', async () => {
     facebookApi.loadUser.mockResolvedValueOnce(undefined);
 
-    const authResult = await sut.perform({ token });
+    const authResult = await sut({ token });
 
     expect(authResult).toEqual(new AuthenticationError());
   });
 
   it('should call LoadUserByEmailRepository when LoadFacebookUserApi returns data', async () => {
-    await sut.perform({ token });
+    await sut({ token });
 
     expect(userAccountRepository.load).toHaveBeenCalledWith({ email: 'any_mail' });
     expect(userAccountRepository.load).toHaveBeenCalledTimes(1);
@@ -77,7 +77,7 @@ describe('FacebookAuthenticationUseCase', () => {
 
     mocked(FacebookAccount).mockImplementation(FacebokAccountStub);
 
-    await sut.perform({ token });
+    await sut({ token });
 
     expect(userAccountRepository.saveWithFacebook).toHaveBeenCalledWith({
       name: 'any_name',
@@ -86,7 +86,7 @@ describe('FacebookAuthenticationUseCase', () => {
   });
 
   it('should call TokenGenerator with correct params', async () => {
-    await sut.perform({ token });
+    await sut({ token });
 
     expect(crypto.generateToken).toHaveBeenCalledWith({
       key: 'any_id',
@@ -96,7 +96,7 @@ describe('FacebookAuthenticationUseCase', () => {
   });
 
   it('should return an access token on success', async () => {
-    const result = await sut.perform({ token });
+    const result = await sut({ token });
 
     expect(result).toEqual(new AccessToken('any_generated_token'));
   });
@@ -104,24 +104,24 @@ describe('FacebookAuthenticationUseCase', () => {
   it('should throw if LoadFacebookApi throws', async () => {
     facebookApi.loadUser.mockRejectedValueOnce(new Error('fb_error'));
 
-    await expect(sut.perform({ token })).rejects.toThrow(new Error('fb_error'));
+    await expect(sut({ token })).rejects.toThrow(new Error('fb_error'));
   });
 
   it('should throw if LoadUserAccountRepository throws', async () => {
     userAccountRepository.load.mockRejectedValueOnce(new Error('load_error'));
 
-    await expect(sut.perform({ token })).rejects.toThrow(new Error('load_error'));
+    await expect(sut({ token })).rejects.toThrow(new Error('load_error'));
   });
 
   it('should throw if SaveFacebookAccountRepository throws', async () => {
     userAccountRepository.saveWithFacebook.mockRejectedValueOnce(new Error('save_error'));
 
-    await expect(sut.perform({ token })).rejects.toThrow(new Error('save_error'));
+    await expect(sut({ token })).rejects.toThrow(new Error('save_error'));
   });
 
   it('should throw if TokenGenerator throws', async () => {
     crypto.generateToken.mockRejectedValueOnce(new Error('generation_error'));
 
-    await expect(sut.perform({ token })).rejects.toThrow(new Error('generation_error'));
+    await expect(sut({ token })).rejects.toThrow(new Error('generation_error'));
   });
 });
