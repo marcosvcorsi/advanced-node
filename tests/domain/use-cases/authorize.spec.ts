@@ -9,31 +9,35 @@ namespace TokenValidator {
     token: string;
   }
 
-  export type Result = boolean;
+  export type Result = string;
 }
 
 type Input = {
   token: string;
 }
 
-type Authorize = (params: Input) => Promise<void>;
+type Output = string;
+
+type Authorize = (params: Input) => Promise<Output>;
 
 type Setup = (crypto: TokenValidator) => Authorize;
 
-const setupAuthorize: Setup = (crypto) => async (params) => {
-  await crypto.validate(params);
-};
+const setupAuthorize: Setup = (crypto) => async (params) => crypto.validate(params);
 
 describe('Authorize', () => {
   let crypto: MockProxy<TokenValidator>;
   let token: string;
+  let userId: string;
 
   let sut: Authorize;
 
   beforeAll(() => {
     token = 'any_token';
+    userId = 'any_user_id';
 
     crypto = mock();
+
+    crypto.validate.mockResolvedValue(userId);
   });
 
   beforeEach(() => {
@@ -45,5 +49,11 @@ describe('Authorize', () => {
 
     expect(crypto.validate).toHaveBeenCalledWith({ token });
     expect(crypto.validate).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return user id on success', async () => {
+    const result = await sut({ token });
+
+    expect(result).toEqual(userId);
   });
 });
