@@ -4,8 +4,15 @@ import { SaveFacebookAccountRepository, LoadUserAccountRepository } from '@/doma
 import { AccessToken, FacebookAccount } from '@/domain/entities';
 import { AuthenticationError } from '@/domain/errors';
 
-export type FacebookAuthentication =
-  (params: { token: string }) => Promise<{ accessToken: string }>;
+type Input = {
+  token: string;
+}
+
+type Output = {
+  accessToken: string;
+}
+
+export type FacebookAuthentication = (params: Input) => Promise<Output>;
 
 type Setup = (
   facebookApi: LoadFacebookUserApi,
