@@ -1,6 +1,6 @@
 import { FacebookAuthentication, setupFacebookAuthentication } from '@/domain/use-cases';
 import { makeFacebookApi } from '@/main/factories/apis';
-import { makeJwtTokenGenerator } from '@/main/factories/crypto';
+import { makeJwtTokenHandler } from '@/main/factories/crypto';
 import { makePgUserAccountRepository } from '@/main/factories/repositories';
 
 export const makeFacebookAuthentication = (): FacebookAuthentication => {
@@ -8,11 +8,11 @@ export const makeFacebookAuthentication = (): FacebookAuthentication => {
 
   const pgUserAccountRepository = makePgUserAccountRepository();
 
-  const jwtTokenGenerator = makeJwtTokenGenerator();
+  const JwtTokenHandler = makeJwtTokenHandler();
 
   return setupFacebookAuthentication(
     facebookApi,
     pgUserAccountRepository,
-    jwtTokenGenerator,
+    JwtTokenHandler,
   );
 };

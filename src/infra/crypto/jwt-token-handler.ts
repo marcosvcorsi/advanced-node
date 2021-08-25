@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 
 import { TokenGenerator } from '@/domain/contracts/crypto';
 
-export class JwtTokenGenerator implements TokenGenerator {
+export class JwtTokenHandler implements TokenGenerator {
   constructor(
     private readonly secret: string,
   ) {}

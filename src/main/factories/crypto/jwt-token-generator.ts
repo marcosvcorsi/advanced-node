@@ -1,4 +1,4 @@
-import { JwtTokenGenerator } from '@/infra/crypto';
+import { JwtTokenHandler } from '@/infra/crypto';
 import { env } from '@/main/config/env';
 
-export const makeJwtTokenGenerator = (): JwtTokenGenerator => new JwtTokenGenerator(env.jwtSecret);
+export const makeJwtTokenHandler = (): JwtTokenHandler => new JwtTokenHandler(env.jwtSecret);
