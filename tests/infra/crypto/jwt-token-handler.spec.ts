@@ -72,5 +72,19 @@ describe('JwtTokenHandler', () => {
 
       expect(result).toBe(key);
     });
+
+    it('should throw if verify throws', async () => {
+      fakeJwt.verify.mockImplementationOnce(() => {
+        throw new Error('verify_error');
+      });
+
+      await expect(sut.validate({ token })).rejects.toThrow(new Error('verify_error'));
+    });
+
+    it('should throw if verify returns null', async () => {
+      fakeJwt.verify.mockImplementationOnce(() => null);
+
+      await expect(sut.validate({ token })).rejects.toThrow();
+    });
   });
 });
