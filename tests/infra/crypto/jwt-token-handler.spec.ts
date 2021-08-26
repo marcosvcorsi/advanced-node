@@ -6,8 +6,8 @@ jest.mock('jsonwebtoken');
 
 describe('JwtTokenHandler', () => {
   let key: string;
-  let expirationInMs: number;
   let secret: string;
+  let token: string;
 
   let fakeJwt: jest.Mocked<typeof jwt>;
 
@@ -17,34 +17,50 @@ describe('JwtTokenHandler', () => {
     fakeJwt = jwt as jest.Mocked<typeof jwt>;
 
     key = 'any_key';
-    expirationInMs = 1000;
     secret = 'any_secret';
-
-    fakeJwt.sign.mockImplementation(() => 'any_token');
+    token = 'any_token';
   });
 
   beforeEach(() => {
     sut = new JwtTokenHandler(secret);
   });
 
-  it('should call jsonwebtoken sign with correct params', async () => {
-    await sut.generateToken({ key, expirationInMs });
+  describe('generateToken', () => {
+    let expirationInMs: number;
 
-    expect(fakeJwt.sign).toHaveBeenCalledWith({ key }, secret, { expiresIn: 1 });
-    expect(fakeJwt.sign).toHaveBeenCalledTimes(1);
-  });
+    beforeAll(() => {
+      expirationInMs = 1000;
 
-  it('should return a token', async () => {
-    const result = await sut.generateToken({ key, expirationInMs });
-
-    expect(result).toBe('any_token');
-  });
-
-  it('should throw if sign throws', async () => {
-    fakeJwt.sign.mockImplementationOnce(() => {
-      throw new Error('sign_error');
+      fakeJwt.sign.mockImplementation(() => token);
     });
 
-    await expect(sut.generateToken({ key, expirationInMs })).rejects.toThrow(new Error('sign_error'));
+    it('should call jsonwebtoken sign with correct params', async () => {
+      await sut.generateToken({ key, expirationInMs });
+
+      expect(fakeJwt.sign).toHaveBeenCalledWith({ key }, secret, { expiresIn: 1 });
+      expect(fakeJwt.sign).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return a token', async () => {
+      const result = await sut.generateToken({ key, expirationInMs });
+
+      expect(result).toBe(token);
+    });
+
+    it('should throw if sign throws', async () => {
+      fakeJwt.sign.mockImplementationOnce(() => {
+        throw new Error('sign_error');
+      });
+
+      await expect(sut.generateToken({ key, expirationInMs })).rejects.toThrow(new Error('sign_error'));
+    });
+  });
+
+  describe('validate', () => {
+    it('should call verify with correct params', async () => {
+      await sut.validate({ token });
+
+      expect(jwt.verify).toHaveBeenCalledWith(token, secret);
+    });
   });
 });
