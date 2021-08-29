@@ -1,5 +1,5 @@
 import { UnauthorizedError } from '@/application/errors';
-import { HttpResponse, unauthorized } from '@/application/helpers';
+import { HttpResponse, ok, unauthorized } from '@/application/helpers';
 import { RequiredStringValidator } from '@/application/validation';
 import { Authorize } from '@/domain/use-cases';
 
@@ -20,9 +20,9 @@ class AuthenticationMiddleware {
     }
 
     try {
-      await this.authorize({ token: authorization });
+      const userId = await this.authorize({ token: authorization });
 
-      return undefined;
+      return ok({ userId });
     } catch {
       return unauthorized();
     }
@@ -31,14 +31,16 @@ class AuthenticationMiddleware {
 
 describe('AuthenticationMiddleware', () => {
   let authorization: string;
+  let userId: string;
   let authorize: jest.Mock;
 
   let sut: AuthenticationMiddleware;
 
   beforeAll(() => {
     authorization = 'any_token';
+    userId = 'any_user_id';
 
-    authorize = jest.fn();
+    authorize = jest.fn().mockResolvedValue(userId);
   });
 
   beforeEach(() => {
@@ -89,6 +91,17 @@ describe('AuthenticationMiddleware', () => {
     expect(response).toEqual({
       statusCode: 401,
       data: new UnauthorizedError(),
+    });
+  });
+
+  it('should return 200 with userId on success', async () => {
+    const response = await sut.handle({ authorization });
+
+    expect(response).toEqual({
+      statusCode: 200,
+      data: {
+        userId,
+      },
     });
   });
 });
