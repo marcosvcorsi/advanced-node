@@ -12,10 +12,12 @@ interface Middleware {
 
 type ExpressMiddleware = (middleware: Middleware) => RequestHandler;
 
-const adaptExpressMiddleware: ExpressMiddleware = (middleware) => async (req, _res, _next) => {
+const adaptExpressMiddleware: ExpressMiddleware = (middleware) => async (req, res, _next) => {
   const { headers } = req;
 
-  await middleware.handle(headers);
+  const { statusCode, data } = await middleware.handle(headers);
+
+  res.status(statusCode).send(data);
 };
 
 describe('ExpressMiddleware', () => {
@@ -35,7 +37,14 @@ describe('ExpressMiddleware', () => {
     req = getMockReq({ headers });
     res = getMockRes().res;
     next = getMockRes().next;
+
     middleware = mock();
+    middleware.handle.mockResolvedValue({
+      statusCode: 200,
+      data: {
+        message: 'any_message',
+      },
+    });
   });
 
   beforeEach(() => {
@@ -56,5 +65,23 @@ describe('ExpressMiddleware', () => {
 
     expect(middleware.handle).toHaveBeenCalledWith({});
     expect(middleware.handle).toHaveBeenCalledTimes(1);
+  });
+
+  it('should respond error and status code', async () => {
+    const data = {
+      error: 'any_error',
+    };
+
+    middleware.handle.mockResolvedValue({
+      statusCode: 500,
+      data,
+    });
+
+    await sut(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.status).toHaveBeenCalledTimes(1);
+    expect(res.send).toHaveBeenCalledWith(data);
+    expect(res.send).toHaveBeenCalledTimes(1);
   });
 });
