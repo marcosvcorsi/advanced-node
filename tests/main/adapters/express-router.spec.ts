@@ -17,15 +17,13 @@ describe('ExpressRouter', () => {
   let sut: RequestHandler;
 
   beforeAll(() => {
-    controller = mock();
-  });
-
-  beforeEach(() => {
     body = { any: 'any' };
 
     req = getMockReq({ body });
     res = getMockRes().res;
     next = getMockRes().next;
+
+    controller = mock();
 
     controller.handle.mockResolvedValue({
       statusCode: 200,
@@ -33,7 +31,9 @@ describe('ExpressRouter', () => {
         any: 'data',
       },
     });
+  });
 
+  beforeEach(() => {
     sut = adaptExpressRouter(controller);
   });
 
