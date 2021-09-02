@@ -9,8 +9,8 @@ export const adaptExpressMiddleware: ExpressMiddleware = (middleware) => async (
 
   const { statusCode, data } = await middleware.handle(headers);
 
-  if (statusCode >= 500) {
-    return res.status(statusCode).send(data);
+  if (statusCode >= 400) {
+    return res.status(statusCode).send({ error: data.message });
   }
 
   req.locals = {

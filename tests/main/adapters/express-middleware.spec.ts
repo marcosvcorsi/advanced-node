@@ -67,7 +67,7 @@ describe('ExpressMiddleware', () => {
 
     middleware.handle.mockResolvedValueOnce({
       statusCode: 500,
-      data: errorData,
+      data: new Error(errorData.error),
     });
 
     await sut(req, res, next);

@@ -1,4 +1,5 @@
 import { HttpResponse, ok, unauthorized } from '@/application/helpers';
+import { Middleware } from '@/application/middlewares';
 import { RequiredStringValidator } from '@/application/validation';
 import { Authorize } from '@/domain/use-cases';
 
@@ -8,7 +9,7 @@ type HttpRequest = {
 
 type Result = Error | { userId: string }
 
-export class AuthenticationMiddleware {
+export class AuthenticationMiddleware implements Middleware {
   constructor(
     private readonly authorize: Authorize,
   ) {}
