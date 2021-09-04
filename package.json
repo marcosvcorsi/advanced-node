@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npx rimraf dist && npx tsc -p tsconfig-build.json",
     "start": "node dist/main/server.js",
-    "dev": "tsnd --inspect --transpile-only --ignore-watch --ignore-watch node_modules --respawn src/main/server.ts",
+    "dev": "tsnd --inspect --transpile-only --ignore-watch node_modules --respawn src/main/server.ts",
     "lint": "npx eslint ./**/*.ts",
     "lint:fix": "npm run lint -- --fix",
     "test": "jest --passWithNoTests --no-cache --runInBand",
