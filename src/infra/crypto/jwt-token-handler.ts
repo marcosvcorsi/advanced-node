@@ -1,13 +1,13 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
-import { TokenGenerator, TokenValidator } from '@/domain/contracts/crypto';
+import { TokenGenerator, TokenValidator } from '@/domain/contracts/gateways';
 
 export class JwtTokenHandler implements TokenGenerator, TokenValidator {
   constructor(
     private readonly secret: string,
   ) {}
 
-  async generateToken(params: TokenGenerator.Params): Promise<TokenGenerator.Result> {
+  async generate(params: TokenGenerator.Params): Promise<TokenGenerator.Result> {
     const { key, expirationInMs } = params;
 
     const expiresInSeconds = expirationInMs / 1000;

@@ -35,14 +35,14 @@ describe('JwtTokenHandler', () => {
     });
 
     it('should call jsonwebtoken sign with correct params', async () => {
-      await sut.generateToken({ key, expirationInMs });
+      await sut.generate({ key, expirationInMs });
 
       expect(fakeJwt.sign).toHaveBeenCalledWith({ key }, secret, { expiresIn: 1 });
       expect(fakeJwt.sign).toHaveBeenCalledTimes(1);
     });
 
     it('should return a token', async () => {
-      const result = await sut.generateToken({ key, expirationInMs });
+      const result = await sut.generate({ key, expirationInMs });
 
       expect(result).toBe(token);
     });
@@ -52,7 +52,7 @@ describe('JwtTokenHandler', () => {
         throw new Error('sign_error');
       });
 
-      await expect(sut.generateToken({ key, expirationInMs })).rejects.toThrow(new Error('sign_error'));
+      await expect(sut.generate({ key, expirationInMs })).rejects.toThrow(new Error('sign_error'));
     });
   });
 

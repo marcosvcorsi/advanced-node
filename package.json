@@ -10,10 +10,10 @@
     "lint": "npx eslint ./**/*.ts",
     "lint:fix": "npm run lint -- --fix",
     "test": "jest --passWithNoTests --no-cache --runInBand",
-    "test:staged": "npm test -- --findRelatedTests",
-    "test:watch": "npm test -- --watch",
-    "test:coverage": "npm test -- --coverage",
-    "test:fb-api": "npm test -- -c ./jest.integration.config.js tests/external/facebook-api.test.ts",
+    "test:staged": "npm t -- --findRelatedTests",
+    "test:watch": "npm t -- --watch",
+    "test:coverage": "npm t -- --coverage",
+    "test:fb-api": "npm t -- -c ./jest.integration.config.js tests/external/facebook-api.test.ts",
     "prepare": "npx husky install"
   },
   "keywords": [
