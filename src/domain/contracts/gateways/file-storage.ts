@@ -4,7 +4,7 @@ export namespace UploadFile {
     key: string;
   }
 
-  export type Result = Promise<void>;
+  export type Result = Promise<string>;
 }
 
 export interface UploadFile {

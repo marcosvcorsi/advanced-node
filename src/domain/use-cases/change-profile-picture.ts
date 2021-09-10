@@ -1,4 +1,5 @@
 import { UploadFile, UUIDGenerator } from '@/domain/contracts/gateways';
+import { SaveUserPictureRepository } from '@/domain/contracts/repositories';
 
 type Input = {
   id: string;
@@ -7,16 +8,22 @@ type Input = {
 
 type Output = Promise<void>
 
-type Setup = (fileStorage: UploadFile, crypto: UUIDGenerator) => ChangeProfilePicture;
+type Setup = (
+  fileStorage: UploadFile,
+  crypto: UUIDGenerator,
+  userProfileRepository: SaveUserPictureRepository
+) => ChangeProfilePicture;
 
 export type ChangeProfilePicture = (input: Input) => Output;
 
-export const setupChangeProfilePicture: Setup = (fileStorage, crypto) => async ({ id, file }) => {
+export const setupChangeProfilePicture: Setup = (fileStorage, crypto, userProfileRepository) => async ({ id, file }) => {
   if (!file) {
     return;
   }
 
   const uuid = crypto.generate({ key: id });
 
-  await fileStorage.upload({ file, key: uuid });
+  const pictureUrl = await fileStorage.upload({ file, key: uuid });
+
+  await userProfileRepository.savePicture({ pictureUrl });
 };
