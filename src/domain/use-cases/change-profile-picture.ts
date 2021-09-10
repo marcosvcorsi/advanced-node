@@ -17,13 +17,13 @@ type Setup = (
 export type ChangeProfilePicture = (input: Input) => Output;
 
 export const setupChangeProfilePicture: Setup = (fileStorage, crypto, userProfileRepository) => async ({ id, file }) => {
-  if (!file) {
-    return;
+  let pictureUrl: string | undefined;
+
+  if (file) {
+    const uuid = crypto.generate({ key: id });
+
+    pictureUrl = await fileStorage.upload({ file, key: uuid });
   }
-
-  const uuid = crypto.generate({ key: id });
-
-  const pictureUrl = await fileStorage.upload({ file, key: uuid });
 
   await userProfileRepository.savePicture({ pictureUrl });
 };
