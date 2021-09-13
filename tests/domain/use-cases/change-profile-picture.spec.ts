@@ -67,4 +67,10 @@ describe('ChangeProfilePicture', () => {
     expect(userProfileRepository.load).toHaveBeenCalledWith({ id });
     expect(userProfileRepository.load).toHaveBeenCalledTimes(1);
   });
+
+  it('should not call LoadUserProfileRepository when file is passed', async () => {
+    await sut({ id, file });
+
+    expect(userProfileRepository.load).not.toHaveBeenCalled();
+  });
 });
