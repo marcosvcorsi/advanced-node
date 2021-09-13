@@ -1,7 +1,7 @@
 import { mock, MockProxy } from 'jest-mock-extended';
 
 import { UploadFile, UUIDGenerator } from '@/domain/contracts/gateways';
-import { SaveUserPictureRepository } from '@/domain/contracts/repositories';
+import { LoadUserProfileRepository, SaveUserPictureRepository } from '@/domain/contracts/repositories';
 import { ChangeProfilePicture, setupChangeProfilePicture } from '@/domain/use-cases';
 
 describe('ChangeProfilePicture', () => {
@@ -12,7 +12,7 @@ describe('ChangeProfilePicture', () => {
 
   let fileStorage: MockProxy<UploadFile>;
   let crypto: MockProxy<UUIDGenerator>;
-  let userProfileRepository: MockProxy<SaveUserPictureRepository>;
+  let userProfileRepository: MockProxy<SaveUserPictureRepository & LoadUserProfileRepository>;
 
   let sut: ChangeProfilePicture;
 
@@ -59,5 +59,12 @@ describe('ChangeProfilePicture', () => {
 
     expect(userProfileRepository.savePicture).toHaveBeenCalledWith({ pictureUrl: undefined });
     expect(userProfileRepository.savePicture).toHaveBeenCalledTimes(1);
+  });
+
+  it('should call LoadUserProfileRepository with correct params', async () => {
+    await sut({ id, file: undefined });
+
+    expect(userProfileRepository.load).toHaveBeenCalledWith({ id });
+    expect(userProfileRepository.load).toHaveBeenCalledTimes(1);
   });
 });

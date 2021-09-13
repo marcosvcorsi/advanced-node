@@ -10,3 +10,19 @@ export namespace SaveUserPictureRepository {
 
   export type Result = void;
 }
+
+export interface LoadUserProfileRepository {
+  load: (params: LoadUserProfileRepository.Params)
+    => Promise<LoadUserProfileRepository.Result>;
+}
+
+export namespace LoadUserProfileRepository {
+  export type Params = {
+    id: string;
+  }
+
+  export type Result = undefined | {
+    id: string;
+    name?: string;
+  };
+}
