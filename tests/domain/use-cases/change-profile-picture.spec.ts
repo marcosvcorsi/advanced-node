@@ -26,6 +26,7 @@ describe('ChangeProfilePicture', () => {
     crypto = mock();
     userProfileRepository = mock();
 
+    userProfileRepository.load.mockResolvedValue({ name: 'John Doe' });
     fileStorage.upload.mockResolvedValue(pictureUrl);
     crypto.generate.mockReturnValue(uuid);
   });
@@ -47,20 +48,6 @@ describe('ChangeProfilePicture', () => {
     expect(fileStorage.upload).not.toHaveBeenCalled();
   });
 
-  it('should call SaveUserPictureRepository with correct params', async () => {
-    await sut({ id, file });
-
-    expect(userProfileRepository.savePicture).toHaveBeenCalledWith({ pictureUrl });
-    expect(userProfileRepository.savePicture).toHaveBeenCalledTimes(1);
-  });
-
-  it('should call SaveUserPictureRepository with undefined file param', async () => {
-    await sut({ id, file: undefined });
-
-    expect(userProfileRepository.savePicture).toHaveBeenCalledWith({ pictureUrl: undefined });
-    expect(userProfileRepository.savePicture).toHaveBeenCalledTimes(1);
-  });
-
   it('should call LoadUserProfileRepository with correct params', async () => {
     await sut({ id, file: undefined });
 
@@ -72,5 +59,55 @@ describe('ChangeProfilePicture', () => {
     await sut({ id, file });
 
     expect(userProfileRepository.load).not.toHaveBeenCalled();
+  });
+
+  it('should call SaveUserPictureRepository with correct params', async () => {
+    await sut({ id, file });
+
+    expect(userProfileRepository.savePicture).toHaveBeenCalledWith({ pictureUrl });
+    expect(userProfileRepository.savePicture).toHaveBeenCalledTimes(1);
+  });
+
+  it('should call SaveUserPictureRepository with undefined file param', async () => {
+    await sut({ id, file: undefined });
+
+    expect(userProfileRepository.savePicture).toHaveBeenCalledWith({ pictureUrl: undefined, initials: 'JD' });
+    expect(userProfileRepository.savePicture).toHaveBeenCalledTimes(1);
+  });
+
+  it('should call SaveUserPictureRepository with undefined file param and lower case name', async () => {
+    userProfileRepository.load.mockResolvedValue({ name: 'john doe' });
+
+    await sut({ id, file: undefined });
+
+    expect(userProfileRepository.savePicture).toHaveBeenCalledWith({ pictureUrl: undefined, initials: 'JD' });
+    expect(userProfileRepository.savePicture).toHaveBeenCalledTimes(1);
+  });
+
+  it('should call SaveUserPictureRepository with undefined file param and only first name', async () => {
+    userProfileRepository.load.mockResolvedValue({ name: 'john' });
+
+    await sut({ id, file: undefined });
+
+    expect(userProfileRepository.savePicture).toHaveBeenCalledWith({ pictureUrl: undefined, initials: 'JO' });
+    expect(userProfileRepository.savePicture).toHaveBeenCalledTimes(1);
+  });
+
+  it('should call SaveUserPictureRepository with undefined file param and only one letter name', async () => {
+    userProfileRepository.load.mockResolvedValue({ name: 'j' });
+
+    await sut({ id, file: undefined });
+
+    expect(userProfileRepository.savePicture).toHaveBeenCalledWith({ pictureUrl: undefined, initials: 'J' });
+    expect(userProfileRepository.savePicture).toHaveBeenCalledTimes(1);
+  });
+
+  it('should call SaveUserPictureRepository with undefined file param and user has no name', async () => {
+    userProfileRepository.load.mockResolvedValue({});
+
+    await sut({ id, file: undefined });
+
+    expect(userProfileRepository.savePicture).toHaveBeenCalledWith({ pictureUrl: undefined, initials: undefined });
+    expect(userProfileRepository.savePicture).toHaveBeenCalledTimes(1);
   });
 });

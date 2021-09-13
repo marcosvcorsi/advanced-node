@@ -6,6 +6,7 @@ export interface SaveUserPictureRepository {
 export namespace SaveUserPictureRepository {
   export type Params = {
     pictureUrl?: string;
+    initials?: string;
   }
 
   export type Result = void;
@@ -21,8 +22,7 @@ export namespace LoadUserProfileRepository {
     id: string;
   }
 
-  export type Result = undefined | {
-    id: string;
+  export type Result = {
     name?: string;
   };
 }
