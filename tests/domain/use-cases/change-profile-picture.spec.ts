@@ -90,10 +90,20 @@ describe('ChangeProfilePicture', () => {
 
   it('should call DeleteFile when file exists and SaveUserPictureRepository throws', async () => {
     userProfileRepository.savePicture.mockRejectedValueOnce(new Error('any_error'));
+    expect.assertions(2);
 
     sut({ id, file }).catch(() => {
       expect(fileStorage.delete).toHaveBeenLastCalledWith({ key: id });
       expect(fileStorage.delete).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('should not call DeleteFile when file does not exists and SaveUserPictureRepository throws', async () => {
+    userProfileRepository.savePicture.mockRejectedValueOnce(new Error('any_error'));
+    expect.assertions(1);
+
+    sut({ id, file: undefined }).catch(() => {
+      expect(fileStorage.delete).not.toHaveBeenCalled();
     });
   });
 });
