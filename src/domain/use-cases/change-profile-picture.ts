@@ -7,7 +7,10 @@ type Input = {
   file?: Buffer;
 }
 
-type Output = Promise<void>
+type Output = {
+  pictureUrl?: string;
+  initials?: string;
+}
 
 type Setup = (
   fileStorage: UploadFile,
@@ -15,7 +18,7 @@ type Setup = (
   userProfileRepository: SaveUserPictureRepository & LoadUserProfileRepository,
 ) => ChangeProfilePicture;
 
-export type ChangeProfilePicture = (input: Input) => Output;
+export type ChangeProfilePicture = (input: Input) => Promise<Output>;
 
 export const setupChangeProfilePicture: Setup = (fileStorage, crypto, userProfileRepository) => async ({ id, file }) => {
   const userProfileData: { pictureUrl?: string, name?: string } = {};
@@ -34,4 +37,6 @@ export const setupChangeProfilePicture: Setup = (fileStorage, crypto, userProfil
   userProfile.setPicture(userProfileData);
 
   await userProfileRepository.savePicture(userProfile);
+
+  return userProfile;
 };
