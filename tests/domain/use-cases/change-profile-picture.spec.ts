@@ -1,7 +1,7 @@
 import { mock, MockProxy } from 'jest-mock-extended';
 import { mocked } from 'ts-jest/utils';
 
-import { UploadFile, UUIDGenerator } from '@/domain/contracts/gateways';
+import { UploadFile, UUIDGenerator, DeleteFile } from '@/domain/contracts/gateways';
 import { LoadUserProfileRepository, SaveUserPictureRepository } from '@/domain/contracts/repositories';
 import { UserProfile } from '@/domain/entities';
 import { ChangeProfilePicture, setupChangeProfilePicture } from '@/domain/use-cases';
@@ -14,7 +14,7 @@ describe('ChangeProfilePicture', () => {
   let uuid: string;
   let pictureUrl: string;
 
-  let fileStorage: MockProxy<UploadFile>;
+  let fileStorage: MockProxy<UploadFile & DeleteFile>;
   let crypto: MockProxy<UUIDGenerator>;
   let userProfileRepository: MockProxy<SaveUserPictureRepository & LoadUserProfileRepository>;
 
@@ -85,6 +85,15 @@ describe('ChangeProfilePicture', () => {
     expect(result).toMatchObject({
       pictureUrl: 'any_url',
       initials: 'AI',
+    });
+  });
+
+  it('should call DeleteFile when file exists and SaveUserPictureRepository throws', async () => {
+    userProfileRepository.savePicture.mockRejectedValueOnce(new Error('any_error'));
+
+    sut({ id, file }).catch(() => {
+      expect(fileStorage.delete).toHaveBeenLastCalledWith({ key: id });
+      expect(fileStorage.delete).toHaveBeenCalledTimes(1);
     });
   });
 });
