@@ -92,7 +92,7 @@ describe('ChangeProfilePicture', () => {
     userProfileRepository.savePicture.mockRejectedValueOnce(new Error('any_error'));
     expect.assertions(2);
 
-    sut({ id, file }).catch(() => {
+    await sut({ id, file }).catch(() => {
       expect(fileStorage.delete).toHaveBeenLastCalledWith({ key: id });
       expect(fileStorage.delete).toHaveBeenCalledTimes(1);
     });
@@ -102,8 +102,14 @@ describe('ChangeProfilePicture', () => {
     userProfileRepository.savePicture.mockRejectedValueOnce(new Error('any_error'));
     expect.assertions(1);
 
-    sut({ id, file: undefined }).catch(() => {
+    await sut({ id, file: undefined }).catch(() => {
       expect(fileStorage.delete).not.toHaveBeenCalled();
     });
+  });
+
+  it('should throws if SaveUserPictureRepository throws', async () => {
+    userProfileRepository.savePicture.mockRejectedValueOnce(new Error('any_error'));
+
+    await expect(sut({ id, file })).rejects.toThrow('any_error');
   });
 });
