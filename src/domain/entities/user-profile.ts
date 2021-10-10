@@ -16,11 +16,11 @@ export class UserProfile {
       let firstLetter: string;
       let lastLetter: string;
 
-      const letters = name.match(/\b(.)/g) ?? [];
+      const letters = name.match(/\b(.)/g)!;
 
       if (letters.length > 1) {
-        firstLetter = letters.shift() ?? '';
-        lastLetter = letters.pop() ?? '';
+        firstLetter = letters.shift() as string;
+        lastLetter = letters.pop() as string;
       } else {
         firstLetter = name.substring(0, 1);
         lastLetter = name.substring(1, 2);
