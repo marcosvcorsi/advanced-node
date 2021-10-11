@@ -3,16 +3,16 @@ import request from 'supertest';
 import { getConnection } from 'typeorm';
 
 import { UnauthorizedError } from '@/application/errors';
-import { PgUser } from '@/infra/postgres/entities';
+import { PgUser } from '@/infra/repositories/postgres/entities';
 import { app } from '@/main/app';
-import { makeInMemoryDb } from '@/tests/infra/postgres/mocks';
+import { makeInMemoryDb } from '@/tests/infra/repositories/postgres/mocks';
 
 describe('Login Routes', () => {
   let backup: IBackup;
 
   const loadUserSpy = jest.fn();
 
-  jest.mock('@/infra/apis/facebook', () => ({
+  jest.mock('@/infra/gateways/facebook-api', () => ({
     FacebookApi: jest.fn().mockReturnValue({
       loadUser: loadUserSpy,
     }),

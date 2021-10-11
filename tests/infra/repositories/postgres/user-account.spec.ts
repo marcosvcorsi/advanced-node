@@ -5,9 +5,9 @@ import {
   Repository,
 } from 'typeorm';
 
-import { PgUser } from '@/infra/postgres/entities';
-import { PgUserAccountRepository } from '@/infra/postgres/repositories';
-import { makeInMemoryDb } from '@/tests/infra/postgres/mocks';
+import { makeInMemoryDb } from '@/../tests/infra/repositories/postgres/mocks';
+import { PgUserAccountRepository } from '@/infra/repositories/postgres';
+import { PgUser } from '@/infra/repositories/postgres/entities';
 
 describe('PgUserAccountRepository', () => {
   let pgUserRepository: Repository<PgUser>;

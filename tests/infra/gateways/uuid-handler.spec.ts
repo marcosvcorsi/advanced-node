@@ -1,7 +1,7 @@
 import { mocked } from 'ts-jest/utils';
 import { v4 } from 'uuid';
 
-import { UUIDHandler } from '@/infra/crypto';
+import { UUIDHandler } from '@/infra/gateways';
 
 jest.mock('uuid');
 
