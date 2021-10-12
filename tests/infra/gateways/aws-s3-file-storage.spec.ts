@@ -104,4 +104,10 @@ describe('AWSS3FileStorage', () => {
 
     expect(result).toBe(`https://${bucket}.s3.amazonaws.com/any%20key`);
   });
+
+  it('should throws if putObject throws', async () => {
+    putObjectPromiseSpy.mockRejectedValueOnce(new Error('any error'));
+
+    await expect(sut.upload({ key, file })).rejects.toThrow();
+  });
 });
