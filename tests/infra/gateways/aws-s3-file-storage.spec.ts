@@ -20,14 +20,14 @@ class AWSS3FileStorage implements UploadFile {
   }
 
   async upload({ key, file }: UploadFile.Params): UploadFile.Result {
-    this.s3.putObject({
+    await this.s3.putObject({
       Bucket: this.bucket,
       Key: key,
       Body: file,
       ACL: 'public-read',
     }).promise();
 
-    return '';
+    return `https://${this.bucket}.s3.amazonaws.com/${encodeURIComponent(key)}`;
   }
 }
 
@@ -91,5 +91,17 @@ describe('AWSS3FileStorage', () => {
     });
     expect(putObjectSpy).toHaveBeenCalledTimes(1);
     expect(putObjectPromiseSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return a file URL', async () => {
+    const result = await sut.upload({ key, file });
+
+    expect(result).toBe(`https://${bucket}.s3.amazonaws.com/${key}`);
+  });
+
+  it('should return a encoded file URL', async () => {
+    const result = await sut.upload({ key: 'any key', file });
+
+    expect(result).toBe(`https://${bucket}.s3.amazonaws.com/any%20key`);
   });
 });
