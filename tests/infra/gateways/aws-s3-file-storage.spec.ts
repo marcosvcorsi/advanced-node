@@ -10,9 +10,6 @@ describe('AWSS3FileStorage', () => {
   let secretAccessKey: string;
   let bucket: string;
   let key: string;
-  let file: Buffer;
-  let putObjectSpy: jest.Mock;
-  let putObjectPromiseSpy: jest.Mock;
 
   let sut: AWSS3FileStorage;
 
@@ -21,17 +18,6 @@ describe('AWSS3FileStorage', () => {
     secretAccessKey = 'any_secret_access_key';
     bucket = 'any_bucket';
     key = 'any_key';
-    file = Buffer.from('any_file');
-
-    putObjectPromiseSpy = jest.fn();
-
-    putObjectSpy = jest.fn().mockImplementation(() => ({
-      promise: putObjectPromiseSpy,
-    }));
-
-    mocked(S3).mockImplementation(jest.fn().mockImplementation(() => ({
-      putObject: putObjectSpy,
-    })));
   });
 
   beforeEach(() => {
@@ -52,34 +38,88 @@ describe('AWSS3FileStorage', () => {
     });
   });
 
-  it('should call putObject with correct params', async () => {
-    await sut.upload({ key, file });
+  describe('upload', () => {
+    let file: Buffer;
+    let putObjectSpy: jest.Mock;
+    let putObjectPromiseSpy: jest.Mock;
 
-    expect(putObjectSpy).toHaveBeenCalledWith({
-      Bucket: bucket,
-      Key: key,
-      Body: file,
-      ACL: 'public-read',
+    beforeAll(() => {
+      file = Buffer.from('any_file');
+
+      putObjectPromiseSpy = jest.fn();
+
+      putObjectSpy = jest.fn().mockImplementation(() => ({
+        promise: putObjectPromiseSpy,
+      }));
+
+      mocked(S3).mockImplementation(jest.fn().mockImplementation(() => ({
+        putObject: putObjectSpy,
+      })));
     });
-    expect(putObjectSpy).toHaveBeenCalledTimes(1);
-    expect(putObjectPromiseSpy).toHaveBeenCalledTimes(1);
+
+    it('should call putObject with correct params', async () => {
+      await sut.upload({ key, file });
+
+      expect(putObjectSpy).toHaveBeenCalledWith({
+        Bucket: bucket,
+        Key: key,
+        Body: file,
+        ACL: 'public-read',
+      });
+      expect(putObjectSpy).toHaveBeenCalledTimes(1);
+      expect(putObjectPromiseSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return a file URL', async () => {
+      const result = await sut.upload({ key, file });
+
+      expect(result).toBe(`https://${bucket}.s3.amazonaws.com/${key}`);
+    });
+
+    it('should return a encoded file URL', async () => {
+      const result = await sut.upload({ key: 'any key', file });
+
+      expect(result).toBe(`https://${bucket}.s3.amazonaws.com/any%20key`);
+    });
+
+    it('should throws if putObject throws', async () => {
+      putObjectPromiseSpy.mockRejectedValueOnce(new Error('any error'));
+
+      await expect(sut.upload({ key, file })).rejects.toThrow();
+    });
   });
 
-  it('should return a file URL', async () => {
-    const result = await sut.upload({ key, file });
+  describe('delete', () => {
+    let deleteObjectSpy: jest.Mock;
+    let deleteObjectPromiseSpy: jest.Mock;
 
-    expect(result).toBe(`https://${bucket}.s3.amazonaws.com/${key}`);
-  });
+    beforeAll(() => {
+      deleteObjectPromiseSpy = jest.fn();
 
-  it('should return a encoded file URL', async () => {
-    const result = await sut.upload({ key: 'any key', file });
+      deleteObjectSpy = jest.fn().mockImplementation(() => ({
+        promise: deleteObjectPromiseSpy,
+      }));
 
-    expect(result).toBe(`https://${bucket}.s3.amazonaws.com/any%20key`);
-  });
+      mocked(S3).mockImplementation(jest.fn().mockImplementation(() => ({
+        deleteObject: deleteObjectSpy,
+      })));
+    });
 
-  it('should throws if putObject throws', async () => {
-    putObjectPromiseSpy.mockRejectedValueOnce(new Error('any error'));
+    it('should call deleteObject with correct params', async () => {
+      await sut.delete({ key });
 
-    await expect(sut.upload({ key, file })).rejects.toThrow();
+      expect(deleteObjectSpy).toHaveBeenCalledWith({
+        Bucket: bucket,
+        Key: key,
+      });
+      expect(deleteObjectSpy).toHaveBeenCalledTimes(1);
+      expect(deleteObjectPromiseSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throws if deleteObject throws', async () => {
+      deleteObjectPromiseSpy.mockRejectedValueOnce(new Error('any error'));
+
+      await expect(sut.delete({ key })).rejects.toThrow();
+    });
   });
 });
