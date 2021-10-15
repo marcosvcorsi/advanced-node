@@ -49,4 +49,19 @@ describe('PgUserProfileRepository', () => {
       expect(pgUser).toMatchObject({ id, pictureUrl, initials: null });
     });
   });
+
+  describe('load()', () => {
+    it('should load user profile', async () => {
+      const name = 'any_name';
+
+      const { id } = await pgUserRepository.save({
+        email: 'any_mail@mail.com',
+        name,
+      });
+
+      const result = await sut.load({ id: String(id) });
+
+      expect(result).toEqual({ name });
+    });
+  });
 });
