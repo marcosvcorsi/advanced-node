@@ -72,6 +72,15 @@ describe('ChangeProfilePicture', () => {
     expect(userProfileRepository.savePicture).toHaveBeenCalledTimes(1);
   });
 
+  it('should call SaveUserPictureRepository with correct params', async () => {
+    userProfileRepository.load.mockRejectedValueOnce(undefined);
+
+    await sut({ id, file });
+
+    expect(userProfileRepository.savePicture).toHaveBeenCalledWith(mocked(UserProfile).mock.instances[0]);
+    expect(userProfileRepository.savePicture).toHaveBeenCalledTimes(1);
+  });
+
   it('should return correct data on success', async () => {
     mocked(UserProfile).mockImplementationOnce(() => ({
       id: 'any_id',

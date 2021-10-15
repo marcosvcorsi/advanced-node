@@ -25,5 +25,5 @@ export namespace LoadUserProfileRepository {
 
   export type Result = {
     name?: string;
-  };
+  } | undefined;
 }

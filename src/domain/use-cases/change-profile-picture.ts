@@ -30,7 +30,7 @@ export const setupChangeProfilePicture: Setup = (fileStorage, crypto, userProfil
   } else {
     const userProfiledLoaded = await userProfileRepository.load({ id });
 
-    userProfileData.name = userProfiledLoaded.name;
+    userProfileData.name = userProfiledLoaded?.name;
   }
 
   const userProfile = new UserProfile(id);
