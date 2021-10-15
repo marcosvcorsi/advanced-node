@@ -63,5 +63,11 @@ describe('PgUserProfileRepository', () => {
 
       expect(result).toEqual({ name });
     });
+
+    it('should return undefined when user profile not exists', async () => {
+      const result = await sut.load({ id: '1' });
+
+      expect(result).toBeUndefined();
+    });
   });
 });
