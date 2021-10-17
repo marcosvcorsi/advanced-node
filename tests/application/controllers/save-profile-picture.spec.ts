@@ -39,4 +39,13 @@ describe('SaveProfilePictureController', () => {
       data: new RequiredFieldError('file'),
     });
   });
+
+  it('should return 400 if file is empty', async () => {
+    const response = await sut.handle({ file: { buffer: Buffer.from('') } });
+
+    expect(response).toEqual({
+      statusCode: 400,
+      data: new RequiredFieldError('file'),
+    });
+  });
 });
