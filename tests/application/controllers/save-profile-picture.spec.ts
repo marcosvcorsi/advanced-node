@@ -13,7 +13,7 @@ class InvalidMimeTypeError extends Error {
 type HttpRequest = {
   file: {
     buffer: Buffer;
-    mimetype: string;
+    mimeType: string;
   };
 }
 
@@ -25,7 +25,11 @@ class SaveProfilePictureController extends Controller {
       return badRequest(new RequiredFieldError('file'));
     }
 
-    return badRequest(new InvalidMimeTypeError(['jpg', 'jpeg', 'png']));
+    if (!['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimeType)) {
+      return badRequest(new InvalidMimeTypeError(['jpg', 'jpeg', 'png']));
+    }
+
+    return {} as any;
   }
 }
 
@@ -78,6 +82,33 @@ describe('SaveProfilePictureController', () => {
     const response = await sut.handle({ file: { buffer, mimeType: 'invalid_type' } });
 
     expect(response).toEqual({
+      statusCode: 400,
+      data: new InvalidMimeTypeError(['jpg', 'jpeg', 'png']),
+    });
+  });
+
+  it('should not return 400 if file type jpg', async () => {
+    const response = await sut.handle({ file: { buffer, mimeType: 'image/jpg' } });
+
+    expect(response).not.toEqual({
+      statusCode: 400,
+      data: new InvalidMimeTypeError(['jpg', 'jpeg', 'png']),
+    });
+  });
+
+  it('should not return 400 if file type jpeg', async () => {
+    const response = await sut.handle({ file: { buffer, mimeType: 'image/jpeg' } });
+
+    expect(response).not.toEqual({
+      statusCode: 400,
+      data: new InvalidMimeTypeError(['jpg', 'jpeg', 'png']),
+    });
+  });
+
+  it('should not return 400 if file type png', async () => {
+    const response = await sut.handle({ file: { buffer, mimeType: 'image/png' } });
+
+    expect(response).not.toEqual({
       statusCode: 400,
       data: new InvalidMimeTypeError(['jpg', 'jpeg', 'png']),
     });
