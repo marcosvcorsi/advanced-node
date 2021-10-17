@@ -1,6 +1,6 @@
 import { Controller } from '@/application/controllers';
 import { RequiredFieldError } from '@/application/errors';
-import { badRequest, HttpResponse } from '@/application/helpers';
+import { badRequest, HttpResponse, ok } from '@/application/helpers';
 import { ChangeProfilePicture } from '@/domain/use-cases';
 
 class InvalidMimeTypeError extends Error {
@@ -27,7 +27,10 @@ type HttpRequest = {
   };
 }
 
-type Response = Error;
+type Response = Error | {
+  initials?: string;
+  pictureUrl?: string;
+};
 
 class SaveProfilePictureController extends Controller {
   constructor(
@@ -49,9 +52,9 @@ class SaveProfilePictureController extends Controller {
       return badRequest(new MaxFileSizeError(5));
     }
 
-    await this.changeProfilePicture({ id: userId, file: file.buffer });
+    const data = await this.changeProfilePicture({ id: userId, file: file.buffer });
 
-    return {} as any;
+    return ok(data);
   }
 }
 
@@ -71,7 +74,10 @@ describe('SaveProfilePictureController', () => {
 
     file = { buffer, mimeType };
 
-    changeProfilePicture = jest.fn();
+    changeProfilePicture = jest.fn().mockResolvedValue({
+      initials: 'any_initials',
+      pictureUrl: 'any_picture_url',
+    });
   });
 
   beforeEach(() => {
@@ -157,5 +163,17 @@ describe('SaveProfilePictureController', () => {
 
     expect(changeProfilePicture).toHaveBeenLastCalledWith({ id: userId, file: buffer });
     expect(changeProfilePicture).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return 200 ok with data', async () => {
+    const response = await sut.handle({ file, userId });
+
+    expect(response).toEqual({
+      statusCode: 200,
+      data: {
+        initials: 'any_initials',
+        pictureUrl: 'any_picture_url',
+      },
+    });
   });
 });
