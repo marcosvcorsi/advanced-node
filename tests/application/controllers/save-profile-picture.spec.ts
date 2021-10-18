@@ -1,62 +1,5 @@
-import { Controller } from '@/application/controllers';
-import { RequiredFieldError } from '@/application/errors';
-import { badRequest, HttpResponse, ok } from '@/application/helpers';
-import { ChangeProfilePicture } from '@/domain/use-cases';
-
-class InvalidMimeTypeError extends Error {
-  constructor(allowed: string[]) {
-    super(`Unsupported mime type. allowed: ${allowed.join(',')}`);
-
-    this.name = 'InvalidMimeTypeError';
-  }
-}
-
-class MaxFileSizeError extends Error {
-  constructor(maxSizeInMb: number) {
-    super(`File upload limit is ${maxSizeInMb} mb`);
-
-    this.name = 'MaxFileSizeError';
-  }
-}
-
-type HttpRequest = {
-  userId: string;
-  file: {
-    buffer: Buffer;
-    mimeType: string;
-  };
-}
-
-type Response = Error | {
-  initials?: string;
-  pictureUrl?: string;
-};
-
-class SaveProfilePictureController extends Controller {
-  constructor(
-    private readonly changeProfilePicture: ChangeProfilePicture,
-  ) {
-    super();
-  }
-
-  async perform({ file, userId }: HttpRequest): Promise<HttpResponse<Response>> {
-    if (!file?.buffer?.length) {
-      return badRequest(new RequiredFieldError('file'));
-    }
-
-    if (!['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimeType)) {
-      return badRequest(new InvalidMimeTypeError(['jpg', 'jpeg', 'png']));
-    }
-
-    if (file.buffer.length > 5 * 1024 * 1024) {
-      return badRequest(new MaxFileSizeError(5));
-    }
-
-    const data = await this.changeProfilePicture({ id: userId, file: file.buffer });
-
-    return ok(data);
-  }
-}
+import { Controller, SaveProfilePictureController } from '@/application/controllers';
+import { InvalidMimeTypeError, MaxFileSizeError, RequiredFieldError } from '@/application/errors';
 
 describe('SaveProfilePictureController', () => {
   let buffer: Buffer;
@@ -82,6 +25,10 @@ describe('SaveProfilePictureController', () => {
 
   beforeEach(() => {
     sut = new SaveProfilePictureController(changeProfilePicture);
+  });
+
+  it('should extends from Controller', () => {
+    expect(sut).toBeInstanceOf(Controller);
   });
 
   it('should return 400 if file is not provided', async () => {
