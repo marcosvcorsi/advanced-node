@@ -1,7 +1,7 @@
-import { RequiredStringValidator, ValidationBuilder } from '@/application/validation';
+import { RequiredString, ValidationBuilder } from '@/application/validation';
 
 describe('ValidationBuilder', () => {
-  it('should return a RequiredStringValidator', () => {
+  it('should return a RequiredString', () => {
     const value = 'any_value';
     const fieldName = 'any_name';
 
@@ -10,6 +10,6 @@ describe('ValidationBuilder', () => {
       fieldName,
     }).required().build();
 
-    expect(validators).toEqual([new RequiredStringValidator(value, fieldName)]);
+    expect(validators).toEqual([new RequiredString(value, fieldName)]);
   });
 });

@@ -1,4 +1,4 @@
-import { Validator, RequiredStringValidator } from '@/application/validation';
+import { Validator, RequiredString } from '@/application/validation';
 
 type ValidationBuilderParams = {
   value: string,
@@ -17,7 +17,7 @@ export class ValidationBuilder {
   }
 
   required(): ValidationBuilder {
-    this.validators.push(new RequiredStringValidator(this.value, this.fieldName));
+    this.validators.push(new RequiredString(this.value, this.fieldName));
 
     return this;
   }
