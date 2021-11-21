@@ -1,6 +1,6 @@
 import { InvalidMimeTypeError } from '@/application/errors';
 
-type Extension = 'jpg' | 'jpeg' | 'png';
+type Extension = 'jpg' | 'png';
 
 export class AllowedMimeTypes {
   constructor(
