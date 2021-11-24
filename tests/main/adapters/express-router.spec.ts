@@ -13,13 +13,15 @@ describe('ExpressRouter', () => {
   let next: NextFunction;
   let controller: MockProxy<Controller>;
   let body: any;
+  let locals: any;
 
   let sut: RequestHandler;
 
   beforeAll(() => {
-    body = { any: 'any' };
+    body = { anyBody: 'any' };
+    locals = { anyLocals: 'any' };
 
-    req = getMockReq({ body });
+    req = getMockReq({ body, locals });
     res = getMockRes().res;
     next = getMockRes().next;
 
@@ -40,7 +42,10 @@ describe('ExpressRouter', () => {
   it('should call handle with correct request', async () => {
     await sut(req, res, next);
 
-    expect(controller.handle).toHaveBeenCalledWith(body);
+    expect(controller.handle).toHaveBeenCalledWith({
+      ...body,
+      ...locals,
+    });
     expect(controller.handle).toHaveBeenCalledTimes(1);
   });
 
