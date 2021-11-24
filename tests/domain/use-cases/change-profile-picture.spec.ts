@@ -10,7 +10,9 @@ jest.mock('@/domain/entities/user-profile');
 
 describe('ChangeProfilePicture', () => {
   let id: string;
-  let file: Buffer;
+  let buffer: Buffer;
+  let mimeType: string;
+  let file: { buffer: Buffer; mimeType: string };
   let uuid: string;
   let pictureUrl: string;
 
@@ -24,7 +26,13 @@ describe('ChangeProfilePicture', () => {
     id = 'any_id';
     uuid = 'any_uuid';
     pictureUrl = 'any_url';
-    file = Buffer.from('any_file');
+    mimeType = 'image/png';
+    buffer = Buffer.from('any_file');
+
+    file = {
+      buffer,
+      mimeType,
+    };
 
     fileStorage = mock();
     crypto = mock();
@@ -39,10 +47,17 @@ describe('ChangeProfilePicture', () => {
     sut = setupChangeProfilePicture(fileStorage, crypto, userProfileRepository);
   });
 
-  it('should call UploadFile with correct input', async () => {
-    await sut({ id, file });
+  it('should call UploadFile with correct input with png', async () => {
+    await sut({ id, file: { buffer, mimeType: 'image/png' } });
 
-    expect(fileStorage.upload).toHaveBeenCalledWith({ file, key: uuid });
+    expect(fileStorage.upload).toHaveBeenCalledWith({ file: buffer, filename: `${uuid}.png` });
+    expect(fileStorage.upload).toHaveBeenCalledTimes(1);
+  });
+
+  it('should call UploadFile with correct input with jpeg', async () => {
+    await sut({ id, file: { buffer, mimeType: 'image/jpeg' } });
+
+    expect(fileStorage.upload).toHaveBeenCalledWith({ file: buffer, filename: `${uuid}.jpeg` });
     expect(fileStorage.upload).toHaveBeenCalledTimes(1);
   });
 
@@ -101,8 +116,8 @@ describe('ChangeProfilePicture', () => {
     userProfileRepository.savePicture.mockRejectedValueOnce(new Error('any_error'));
     expect.assertions(2);
 
-    await sut({ id, file }).catch(() => {
-      expect(fileStorage.delete).toHaveBeenLastCalledWith({ key: id });
+    await sut({ id, file: { buffer, mimeType: 'image/png' } }).catch(() => {
+      expect(fileStorage.delete).toHaveBeenLastCalledWith({ filename: `${uuid}.png` });
       expect(fileStorage.delete).toHaveBeenCalledTimes(1);
     });
   });

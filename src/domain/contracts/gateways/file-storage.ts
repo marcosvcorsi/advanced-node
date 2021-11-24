@@ -1,7 +1,7 @@
 export namespace UploadFile {
   export type Params = {
     file: Buffer;
-    key: string;
+    filename: string;
   }
 
   export type Result = Promise<string>;
@@ -13,7 +13,7 @@ export interface UploadFile {
 
 export namespace DeleteFile {
   export type Params = {
-    key: string;
+    filename: string;
   }
 
   export type Result = Promise<void>;

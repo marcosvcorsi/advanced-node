@@ -23,15 +23,15 @@ describe('AWS S3 Integration Test', () => {
   });
 
   it('should upload and delete image from AWS S3', async () => {
-    const key = 'any_key.png';
+    const filename = 'any_key.png';
 
-    const pictureUrl = await sut.upload({ key, file });
+    const pictureUrl = await sut.upload({ filename, file });
 
     const response = await axios.get(pictureUrl);
 
     expect(response.status).toBe(200);
 
-    await sut.delete({ key });
+    await sut.delete({ filename });
 
     await expect(axios.get(pictureUrl)).rejects.toThrow();
   });

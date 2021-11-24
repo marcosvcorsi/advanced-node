@@ -4,7 +4,10 @@ import { UserProfile } from '@/domain/entities';
 
 type Input = {
   id: string;
-  file?: Buffer;
+  file?: {
+    buffer: Buffer;
+    mimeType: string;
+  };
 }
 
 type Output = {
@@ -23,10 +26,13 @@ export type ChangeProfilePicture = (input: Input) => Promise<Output>;
 export const setupChangeProfilePicture: Setup = (fileStorage, crypto, userProfileRepository) => async ({ id, file }) => {
   const userProfileData: { pictureUrl?: string, name?: string } = {};
 
+  let filename: string | undefined;
+
   if (file) {
     const uuid = crypto.generate({ key: id });
+    filename = `${uuid}.${file.mimeType.split('/').pop()}`;
 
-    userProfileData.pictureUrl = await fileStorage.upload({ file, key: uuid });
+    userProfileData.pictureUrl = await fileStorage.upload({ file: file.buffer, filename });
   } else {
     const userProfiledLoaded = await userProfileRepository.load({ id });
 
@@ -39,8 +45,8 @@ export const setupChangeProfilePicture: Setup = (fileStorage, crypto, userProfil
   try {
     await userProfileRepository.savePicture(userProfile);
   } catch (error) {
-    if (file) {
-      await fileStorage.delete({ key: id });
+    if (filename) {
+      await fileStorage.delete({ filename });
     }
 
     throw error;

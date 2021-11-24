@@ -50,7 +50,7 @@ describe('SaveProfilePictureController', () => {
   it('should call ChangeProfilePicture with correct params', async () => {
     await sut.handle({ file, userId });
 
-    expect(changeProfilePicture).toHaveBeenLastCalledWith({ id: userId, file: buffer });
+    expect(changeProfilePicture).toHaveBeenLastCalledWith({ id: userId, file });
     expect(changeProfilePicture).toHaveBeenCalledTimes(1);
   });
 

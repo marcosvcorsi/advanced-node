@@ -9,7 +9,7 @@ describe('AWSS3FileStorage', () => {
   let accessKeyId: string;
   let secretAccessKey: string;
   let bucket: string;
-  let key: string;
+  let filename: string;
 
   let sut: AWSS3FileStorage;
 
@@ -17,7 +17,7 @@ describe('AWSS3FileStorage', () => {
     accessKeyId = 'any_access_key_id';
     secretAccessKey = 'any_secret_access_key';
     bucket = 'any_bucket';
-    key = 'any_key';
+    filename = 'any_filename';
   });
 
   beforeEach(() => {
@@ -58,11 +58,11 @@ describe('AWSS3FileStorage', () => {
     });
 
     it('should call putObject with correct params', async () => {
-      await sut.upload({ key, file });
+      await sut.upload({ filename, file });
 
       expect(putObjectSpy).toHaveBeenCalledWith({
         Bucket: bucket,
-        Key: key,
+        Key: filename,
         Body: file,
         ACL: 'public-read',
       });
@@ -71,21 +71,21 @@ describe('AWSS3FileStorage', () => {
     });
 
     it('should return a file URL', async () => {
-      const result = await sut.upload({ key, file });
+      const result = await sut.upload({ filename, file });
 
-      expect(result).toBe(`https://${bucket}.s3.amazonaws.com/${key}`);
+      expect(result).toBe(`https://${bucket}.s3.amazonaws.com/${filename}`);
     });
 
     it('should return a encoded file URL', async () => {
-      const result = await sut.upload({ key: 'any key', file });
+      const result = await sut.upload({ filename: 'any filename', file });
 
-      expect(result).toBe(`https://${bucket}.s3.amazonaws.com/any%20key`);
+      expect(result).toBe(`https://${bucket}.s3.amazonaws.com/any%20filename`);
     });
 
     it('should throws if putObject throws', async () => {
       putObjectPromiseSpy.mockRejectedValueOnce(new Error('any error'));
 
-      await expect(sut.upload({ key, file })).rejects.toThrow();
+      await expect(sut.upload({ filename, file })).rejects.toThrow();
     });
   });
 
@@ -106,11 +106,11 @@ describe('AWSS3FileStorage', () => {
     });
 
     it('should call deleteObject with correct params', async () => {
-      await sut.delete({ key });
+      await sut.delete({ filename });
 
       expect(deleteObjectSpy).toHaveBeenCalledWith({
         Bucket: bucket,
-        Key: key,
+        Key: filename,
       });
       expect(deleteObjectSpy).toHaveBeenCalledTimes(1);
       expect(deleteObjectPromiseSpy).toHaveBeenCalledTimes(1);
@@ -119,7 +119,7 @@ describe('AWSS3FileStorage', () => {
     it('should throws if deleteObject throws', async () => {
       deleteObjectPromiseSpy.mockRejectedValueOnce(new Error('any error'));
 
-      await expect(sut.delete({ key })).rejects.toThrow();
+      await expect(sut.delete({ filename })).rejects.toThrow();
     });
   });
 });
