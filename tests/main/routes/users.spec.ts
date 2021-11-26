@@ -36,9 +36,10 @@ describe('Users Routes', () => {
       expect(response.status).toBe(401);
     });
 
-    it('should return 204 on success', async () => {
+    it('should return 200 on success', async () => {
       const { id } = await pgUserRepository.save({
         email: 'any_mail@mail.com',
+        name: 'John Doe',
       });
 
       const authorization = sign({ key: id }, env.jwtSecret);
@@ -47,7 +48,8 @@ describe('Users Routes', () => {
         .delete('/api/users/picture')
         .set({ authorization });
 
-      expect(response.status).toBe(204);
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ pictureUrl: undefined, initials: 'JD' });
     });
   });
 });
