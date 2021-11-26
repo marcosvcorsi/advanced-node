@@ -121,4 +121,11 @@ describe('MulterAdapter', () => {
       },
     });
   });
+
+  it('should call next on success', () => {
+    adaptMulter(req, res, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(next).toHaveBeenCalledTimes(1);
+  });
 });
