@@ -8,4 +8,5 @@ export default (router: Router): void => {
   const controller = makeSaveProfilePictureController();
 
   router.delete('/users/picture', auth, adaptExpressRouter(controller));
+  router.put('/users/picture', auth, adaptExpressRouter(controller));
 };
