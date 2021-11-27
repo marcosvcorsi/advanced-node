@@ -54,6 +54,14 @@ describe('Users Routes', () => {
   });
 
   describe('PUT /users/picture', () => {
+    const uploadSpy = jest.fn();
+
+    jest.mock('@/infra/gateways/aws-s3-file-storage', () => ({
+      AWSS3FileStorage: jest.fn().mockReturnValue({
+        upload: uploadSpy,
+      }),
+    }));
+
     it('should return 401 when authorization header is not present', async () => {
       const response = await request(app)
         .put('/api/users/picture');
@@ -61,20 +69,25 @@ describe('Users Routes', () => {
       expect(response.status).toBe(401);
     });
 
-    // it('should return 200 on success', async () => {
-    //   const { id } = await pgUserRepository.save({
-    //     email: 'any_mail@mail.com',
-    //     name: 'John Doe',
-    //   });
+    it('should return 200 on success', async () => {
+      const pictureUrl = 'any_url';
 
-    //   const authorization = sign({ key: id }, env.jwtSecret);
+      uploadSpy.mockResolvedValueOnce(pictureUrl);
 
-    //   const response = await request(app)
-    //     .delete('/api/users/picture')
-    //     .set({ authorization });
+      const { id } = await pgUserRepository.save({
+        email: 'any_mail@mail.com',
+        name: 'John Doe',
+      });
 
-    //   expect(response.status).toBe(200);
-    //   expect(response.body).toEqual({ pictureUrl: undefined, initials: 'JD' });
-    // });
+      const authorization = sign({ key: id }, env.jwtSecret);
+
+      const response = await request(app)
+        .put('/api/users/picture')
+        .set({ authorization })
+        .attach('picture', Buffer.from('any_buffer'), { filename: 'any_name', contentType: 'image/png' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ pictureUrl, initials: undefined });
+    });
   });
 });
