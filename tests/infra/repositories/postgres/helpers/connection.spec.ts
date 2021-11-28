@@ -30,29 +30,38 @@ jest.mock('typeorm', () => ({
 }));
 
 describe('PgConnection', () => {
+  let getConnectionManagerSpy: jest.Mock;
+  let createConnectionSpy: jest.Mock;
+  let createQueryRunnerSpy: jest.Mock;
+
+  let sut: PgConnection;
+
+  beforeAll(() => {
+    getConnectionManagerSpy = jest.fn().mockReturnValue({
+      has: jest.fn().mockRejectedValueOnce(false),
+    });
+
+    createQueryRunnerSpy = jest.fn();
+
+    createConnectionSpy = jest.fn().mockResolvedValue({
+      createQueryRunner: createQueryRunnerSpy,
+    });
+
+    mocked(getConnectionManager).mockImplementation(getConnectionManagerSpy);
+    mocked(createConnection).mockImplementation(createConnectionSpy);
+  });
+
+  beforeEach(() => {
+    sut = PgConnection.getInstance();
+  });
+
   it('should be a singleton', () => {
-    const sut = PgConnection.getInstance();
     const newInstance = PgConnection.getInstance();
 
     expect(sut).toBe(newInstance);
   });
 
   it('should create a new connection', async () => {
-    const getConnectionManagerSpy = jest.fn().mockReturnValueOnce({
-      has: jest.fn().mockRejectedValueOnce(false),
-    });
-
-    const createQueryRunnerSpy = jest.fn();
-
-    const createConnectionSpy = jest.fn().mockResolvedValueOnce({
-      createQueryRunner: createQueryRunnerSpy,
-    });
-
-    mocked(getConnectionManager).mockImplementationOnce(getConnectionManagerSpy);
-    mocked(createConnection).mockImplementationOnce(createConnectionSpy);
-
-    const sut = PgConnection.getInstance();
-
     await sut.connect();
 
     expect(createConnectionSpy).toHaveBeenCalled();
