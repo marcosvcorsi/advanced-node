@@ -3,6 +3,14 @@ import {
   createConnection, getConnection, getConnectionManager, QueryRunner,
 } from 'typeorm';
 
+class ConnectionNotFoundError extends Error {
+  constructor() {
+    super('Connection not found');
+
+    this.name = 'ConnectionNotFoundError';
+  }
+}
+
 class PgConnection {
   private static instance?: PgConnection;
   private query?: QueryRunner;
@@ -26,6 +34,10 @@ class PgConnection {
   }
 
   async disconnect(): Promise<void> {
+    if (!this.query) {
+      throw new ConnectionNotFoundError();
+    }
+
     await getConnection().close();
 
     this.query = undefined;
@@ -59,7 +71,7 @@ describe('PgConnection', () => {
       has: hasSpy,
     });
 
-    createQueryRunnerSpy = jest.fn();
+    createQueryRunnerSpy = jest.fn().mockReturnValue({});
 
     createConnectionSpy = jest.fn().mockResolvedValue({
       createQueryRunner: createQueryRunnerSpy,
@@ -111,5 +123,10 @@ describe('PgConnection', () => {
 
     expect(closeSpy).toHaveBeenCalled();
     expect(closeSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return ConnectionNotFoundError on disconnect', async () => {
+    expect(closeSpy).not.toHaveBeenCalled();
+    await expect(sut.disconnect()).rejects.toThrow(new ConnectionNotFoundError());
   });
 });
