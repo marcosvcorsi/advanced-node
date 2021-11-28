@@ -35,4 +35,12 @@ export class PgConnection {
 
     this.query = undefined;
   }
+
+  async openTransaction(): Promise<void> {
+    if (!this.query) {
+      throw new ConnectionNotFoundError();
+    }
+
+    await this.query.startTransaction();
+  }
 }

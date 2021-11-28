@@ -21,18 +21,22 @@ describe('PgConnection', () => {
   let createQueryRunnerSpy: jest.Mock;
   let hasSpy: jest.Mock;
   let closeSpy: jest.Mock;
+  let startTransactionSpy: jest.Mock;
 
   let sut: PgConnection;
 
   beforeAll(() => {
     hasSpy = jest.fn().mockReturnValue(true);
     closeSpy = jest.fn();
+    startTransactionSpy = jest.fn();
 
     getConnectionManagerSpy = jest.fn().mockReturnValue({
       has: hasSpy,
     });
 
-    createQueryRunnerSpy = jest.fn().mockReturnValue({});
+    createQueryRunnerSpy = jest.fn().mockReturnValue({
+      startTransaction: startTransactionSpy,
+    });
 
     createConnectionSpy = jest.fn().mockResolvedValue({
       createQueryRunner: createQueryRunnerSpy,
@@ -89,5 +93,20 @@ describe('PgConnection', () => {
   it('should return ConnectionNotFoundError on disconnect', async () => {
     expect(closeSpy).not.toHaveBeenCalled();
     await expect(sut.disconnect()).rejects.toThrow(new ConnectionNotFoundError());
+  });
+
+  it('should open a transaction', async () => {
+    await sut.connect();
+    await sut.openTransaction();
+
+    expect(startTransactionSpy).toHaveBeenCalled();
+    expect(startTransactionSpy).toHaveBeenCalledTimes(1);
+
+    await sut.disconnect();
+  });
+
+  it('should return ConnectionNotFoundError on open transaction', async () => {
+    expect(startTransactionSpy).not.toHaveBeenCalled();
+    await expect(sut.openTransaction()).rejects.toThrow(new ConnectionNotFoundError());
   });
 });
