@@ -59,4 +59,12 @@ export class PgConnection {
 
     await this.query.commitTransaction();
   }
+
+  async rollback(): Promise<void> {
+    if (!this.query) {
+      throw new ConnectionNotFoundError();
+    }
+
+    await this.query.rollbackTransaction();
+  }
 }
