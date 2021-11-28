@@ -1,10 +1,11 @@
 import { mocked } from 'ts-jest/utils';
 import {
-  Connection, createConnection, getConnection, getConnectionManager,
+  createConnection, getConnection, getConnectionManager, QueryRunner,
 } from 'typeorm';
 
 class PgConnection {
   private static instance?: PgConnection;
+  private query?: QueryRunner;
 
   private constructor() {}
 
@@ -17,17 +18,17 @@ class PgConnection {
   }
 
   async connect(): Promise<void> {
-    const connectionManager = getConnectionManager();
+    const connection = getConnectionManager().has('default')
+      ? getConnection()
+      : await createConnection();
 
-    let connection: Connection;
+    this.query = connection.createQueryRunner();
+  }
 
-    if (connectionManager.has('default')) {
-      connection = getConnection('default');
-    } else {
-      connection = await createConnection();
-    }
+  async disconnect(): Promise<void> {
+    await getConnection().close();
 
-    connection.createQueryRunner();
+    this.query = undefined;
   }
 }
 
@@ -46,11 +47,13 @@ describe('PgConnection', () => {
   let getConnectionSpy: jest.Mock;
   let createQueryRunnerSpy: jest.Mock;
   let hasSpy: jest.Mock;
+  let closeSpy: jest.Mock;
 
   let sut: PgConnection;
 
   beforeAll(() => {
     hasSpy = jest.fn().mockReturnValue(true);
+    closeSpy = jest.fn();
 
     getConnectionManagerSpy = jest.fn().mockReturnValue({
       has: hasSpy,
@@ -64,6 +67,7 @@ describe('PgConnection', () => {
 
     getConnectionSpy = jest.fn().mockReturnValue({
       createQueryRunner: createQueryRunnerSpy,
+      close: closeSpy,
     });
 
     mocked(getConnectionManager).mockImplementation(getConnectionManagerSpy);
@@ -99,5 +103,13 @@ describe('PgConnection', () => {
     expect(getConnectionSpy).toHaveBeenCalledTimes(1);
     expect(createQueryRunnerSpy).toHaveBeenCalled();
     expect(createQueryRunnerSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('should close connection', async () => {
+    await sut.connect();
+    await sut.disconnect();
+
+    expect(closeSpy).toHaveBeenCalled();
+    expect(closeSpy).toHaveBeenCalledTimes(1);
   });
 });
