@@ -3,6 +3,7 @@ import {
   createConnection, getConnection, getConnectionManager,
 } from 'typeorm';
 
+import { PgUser } from '@/infra/repositories/postgres/entities';
 import { ConnectionNotFoundError, PgConnection } from '@/infra/repositories/postgres/helpers';
 
 jest.mock('typeorm', () => ({
@@ -25,6 +26,8 @@ describe('PgConnection', () => {
   let startTransactionSpy: jest.Mock;
   let commitTransactionSpy: jest.Mock;
   let rollbackTransactionSpy: jest.Mock;
+  let getRepositorySpy: jest.Mock;
+  let repository: any;
 
   let sut: PgConnection;
 
@@ -36,6 +39,10 @@ describe('PgConnection', () => {
     rollbackTransactionSpy = jest.fn();
     releaseSpy = jest.fn();
 
+    repository = {};
+
+    getRepositorySpy = jest.fn().mockReturnValue(repository);
+
     getConnectionManagerSpy = jest.fn().mockReturnValue({
       has: hasSpy,
     });
@@ -45,6 +52,9 @@ describe('PgConnection', () => {
       commitTransaction: commitTransactionSpy,
       rollbackTransaction: rollbackTransactionSpy,
       release: releaseSpy,
+      manager: {
+        getRepository: getRepositorySpy,
+      },
     });
 
     createConnectionSpy = jest.fn().mockResolvedValue({
@@ -162,5 +172,23 @@ describe('PgConnection', () => {
   it('should return ConnectionNotFoundError on rollback transaction', async () => {
     expect(rollbackTransactionSpy).not.toHaveBeenCalled();
     await expect(sut.rollback()).rejects.toThrow(new ConnectionNotFoundError());
+  });
+
+  it('should get repository', async () => {
+    await sut.connect();
+
+    const result = sut.getRepository(PgUser);
+
+    expect(getRepositorySpy).toHaveBeenCalled();
+    expect(getRepositorySpy).toHaveBeenCalledTimes(1);
+    expect(result).toBe(repository);
+
+    await sut.disconnect();
+  });
+
+  it('should return ConnectionNotFoundError on get repository', async () => {
+    expect(getRepositorySpy).not.toHaveBeenCalled();
+
+    expect(() => sut.getRepository(PgUser)).toThrow(new ConnectionNotFoundError());
   });
 });

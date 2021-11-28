@@ -1,5 +1,10 @@
 import {
-  createConnection, getConnection, getConnectionManager, QueryRunner,
+  createConnection,
+  getConnection,
+  getConnectionManager,
+  ObjectType,
+  QueryRunner,
+  Repository,
 } from 'typeorm';
 
 import { ConnectionNotFoundError } from './errors';
@@ -66,5 +71,13 @@ export class PgConnection {
     }
 
     await this.query.rollbackTransaction();
+  }
+
+  getRepository<T>(entity: ObjectType<T>): Repository<T> {
+    if (!this.query) {
+      throw new ConnectionNotFoundError();
+    }
+
+    return this.query.manager.getRepository(entity);
   }
 }
