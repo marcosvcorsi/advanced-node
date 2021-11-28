@@ -1,27 +1,30 @@
 import { sign } from 'jsonwebtoken';
 import { IBackup } from 'pg-mem';
 import request from 'supertest';
-import { getConnection, getRepository, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { PgUser } from '@/infra/repositories/postgres/entities';
+import { PgConnection } from '@/infra/repositories/postgres/helpers';
 import { app } from '@/main/app';
 import { env } from '@/main/config/env';
 import { makeInMemoryDb } from '@/tests/infra/repositories/postgres/mocks';
 
 describe('Users Routes', () => {
+  let connection: PgConnection;
   let backup: IBackup;
   let pgUserRepository: Repository<PgUser>;
 
   beforeAll(async () => {
+    connection = PgConnection.getInstance();
     const db = await makeInMemoryDb([PgUser]);
 
     backup = db.backup();
 
-    pgUserRepository = getRepository(PgUser);
+    pgUserRepository = connection.getRepository(PgUser);
   });
 
   afterAll(async () => {
-    await getConnection().close();
+    await connection.disconnect();
   });
 
   beforeEach(() => {

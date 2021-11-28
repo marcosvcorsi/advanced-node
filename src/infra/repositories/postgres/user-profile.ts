@@ -1,11 +1,11 @@
-import { getRepository } from 'typeorm';
-
 import { LoadUserProfileRepository, SaveUserPictureRepository } from '@/domain/contracts/repositories';
 import { PgUser } from '@/infra/repositories/postgres/entities';
 
-export class PgUserProfileRepository implements SaveUserPictureRepository, LoadUserProfileRepository {
+import { PgRepository } from './repository';
+
+export class PgUserProfileRepository extends PgRepository implements SaveUserPictureRepository, LoadUserProfileRepository {
   async savePicture({ id, pictureUrl, initials }: SaveUserPictureRepository.Params): Promise<void> {
-    const pgUserRepository = getRepository(PgUser);
+    const pgUserRepository = this.getRepository(PgUser);
 
     await pgUserRepository.update(Number(id), {
       pictureUrl,
@@ -14,7 +14,7 @@ export class PgUserProfileRepository implements SaveUserPictureRepository, LoadU
   }
 
   async load({ id }: LoadUserProfileRepository.Params): Promise<LoadUserProfileRepository.Result> {
-    const pgUserRepository = getRepository(PgUser);
+    const pgUserRepository = this.getRepository(PgUser);
 
     const pgUser = await pgUserRepository.findOne(Number(id));
 

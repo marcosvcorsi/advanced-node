@@ -1,13 +1,13 @@
-import { getRepository } from 'typeorm';
-
 import { LoadUserAccountRepository, SaveFacebookAccountRepository } from '@/domain/contracts/repositories';
 import { PgUser } from '@/infra/repositories/postgres/entities';
 
-export class PgUserAccountRepository implements
+import { PgRepository } from './repository';
+
+export class PgUserAccountRepository extends PgRepository implements
   LoadUserAccountRepository, SaveFacebookAccountRepository {
   async saveWithFacebook(params: SaveFacebookAccountRepository.Params):
     Promise<SaveFacebookAccountRepository.Result> {
-    const pgUserRepository = getRepository(PgUser);
+    const pgUserRepository = this.getRepository(PgUser);
 
     const {
       id,
@@ -39,7 +39,7 @@ export class PgUserAccountRepository implements
 
   async load({ email }: LoadUserAccountRepository.Params):
     Promise<LoadUserAccountRepository.Result> {
-    const pgUserRepository = getRepository(PgUser);
+    const pgUserRepository = this.getRepository(PgUser);
 
     const pgUser = await pgUserRepository.findOne({
       email,
