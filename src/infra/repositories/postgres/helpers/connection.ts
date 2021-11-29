@@ -1,16 +1,20 @@
 import {
+  Connection,
   createConnection,
   getConnection,
   getConnectionManager,
+  getRepository,
   ObjectType,
   QueryRunner,
   Repository,
 } from 'typeorm';
 
+import { TransactionNotFoundError } from '.';
 import { ConnectionNotFoundError } from './errors';
 
 export class PgConnection {
   private static instance?: PgConnection;
+  private connection?: Connection;
   private query?: QueryRunner;
 
   private constructor() {}
@@ -24,34 +28,35 @@ export class PgConnection {
   }
 
   async connect(): Promise<void> {
-    const connection = getConnectionManager().has('default')
+    this.connection = getConnectionManager().has('default')
       ? getConnection()
       : await createConnection();
-
-    this.query = connection.createQueryRunner();
   }
 
   async disconnect(): Promise<void> {
-    if (!this.query) {
+    if (!this.connection) {
       throw new ConnectionNotFoundError();
     }
 
     await getConnection().close();
 
     this.query = undefined;
+    this.connection = undefined;
   }
 
   async openTransaction(): Promise<void> {
-    if (!this.query) {
+    if (!this.connection) {
       throw new ConnectionNotFoundError();
     }
+
+    this.query = this.connection.createQueryRunner();
 
     await this.query.startTransaction();
   }
 
   async closeTransaction(): Promise<void> {
     if (!this.query) {
-      throw new ConnectionNotFoundError();
+      throw new TransactionNotFoundError();
     }
 
     await this.query.release();
@@ -59,7 +64,7 @@ export class PgConnection {
 
   async commit(): Promise<void> {
     if (!this.query) {
-      throw new ConnectionNotFoundError();
+      throw new TransactionNotFoundError();
     }
 
     await this.query.commitTransaction();
@@ -67,17 +72,21 @@ export class PgConnection {
 
   async rollback(): Promise<void> {
     if (!this.query) {
-      throw new ConnectionNotFoundError();
+      throw new TransactionNotFoundError();
     }
 
     await this.query.rollbackTransaction();
   }
 
   getRepository<T>(entity: ObjectType<T>): Repository<T> {
-    if (!this.query) {
+    if (!this.connection) {
       throw new ConnectionNotFoundError();
     }
 
-    return this.query.manager.getRepository(entity);
+    if (this.query) {
+      return this.query.manager.getRepository(entity);
+    }
+
+    return getRepository(entity);
   }
 }
