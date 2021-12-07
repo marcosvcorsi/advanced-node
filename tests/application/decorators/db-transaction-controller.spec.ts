@@ -1,6 +1,7 @@
 import { mock, MockProxy } from 'jest-mock-extended';
 
 import { Controller } from '@/application/controllers';
+import { HttpResponse } from '@/application/helpers';
 
 interface DbTransaction {
   openTransaction: () => Promise<void>;
@@ -15,16 +16,18 @@ class DbTransactionController {
     private readonly db: DbTransaction,
   ) {}
 
-  async perform(httpRequest: any): Promise<void> {
+  async perform(httpRequest: any): Promise<HttpResponse | undefined> {
     await this.db.openTransaction();
 
     try {
-      await this.decorate.perform(httpRequest);
+      const httpResponse = await this.decorate.perform(httpRequest);
 
       await this.db.commit();
+      await this.db.closeTransaction();
+
+      return httpResponse;
     } catch {
       await this.db.rollback();
-    } finally {
       await this.db.closeTransaction();
     }
   }
@@ -34,6 +37,7 @@ describe('DbTransactionController', () => {
   let db: MockProxy<DbTransaction>;
   let decorate: MockProxy<Controller>;
   let params: Record<string, unknown>;
+  let result: HttpResponse;
   let sut: DbTransactionController;
 
   beforeAll(() => {
@@ -43,6 +47,15 @@ describe('DbTransactionController', () => {
     params = {
       any: 'any',
     };
+
+    result = {
+      statusCode: 200,
+      data: {
+        any: 'value',
+      },
+    };
+
+    decorate.perform.mockResolvedValue(result);
   });
 
   beforeEach(() => {
@@ -83,5 +96,11 @@ describe('DbTransactionController', () => {
     expect(db.rollback).toHaveBeenCalledTimes(1);
     expect(db.closeTransaction).toHaveBeenCalled();
     expect(db.closeTransaction).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return same result as decorate on success', async () => {
+    const httpResponse = await sut.perform(params);
+
+    expect(httpResponse).toEqual(result);
   });
 });
