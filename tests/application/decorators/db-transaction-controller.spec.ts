@@ -10,11 +10,13 @@ interface DbTransaction {
   rollback: () => Promise<void>;
 }
 
-class DbTransactionController {
+class DbTransactionController extends Controller {
   constructor(
     private readonly decorate: Controller,
     private readonly db: DbTransaction,
-  ) {}
+  ) {
+    super();
+  }
 
   async perform(httpRequest: any): Promise<HttpResponse> {
     await this.db.openTransaction();
@@ -62,6 +64,10 @@ describe('DbTransactionController', () => {
 
   beforeEach(() => {
     sut = new DbTransactionController(decorate, db);
+  });
+
+  it('should extend Controller', () => {
+    expect(sut).toBeInstanceOf(Controller);
   });
 
   it('should open transaction', async () => {
