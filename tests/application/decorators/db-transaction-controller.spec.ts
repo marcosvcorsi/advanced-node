@@ -1,4 +1,6 @@
-import { mock } from 'jest-mock-extended';
+import { mock, MockProxy } from 'jest-mock-extended';
+
+import { Controller } from '@/application/controllers';
 
 interface DbTransaction {
   openTransaction: () => Promise<void>
@@ -6,25 +8,29 @@ interface DbTransaction {
 
 class DbTransactionController {
   constructor(
+    private readonly decorate: Controller,
     private readonly db: DbTransaction,
   ) {}
 
   async perform(httpRequest: any): Promise<void> {
     await this.db.openTransaction();
-    console.log(httpRequest);
+
+    await this.decorate.perform(httpRequest);
   }
 }
 
 describe('DbTransactionController', () => {
-  let db: jest.Mocked<DbTransaction>;
+  let db: MockProxy<DbTransaction>;
+  let decorate: MockProxy<Controller>;
   let sut: DbTransactionController;
 
   beforeAll(() => {
     db = mock();
+    decorate = mock();
   });
 
   beforeEach(() => {
-    sut = new DbTransactionController(db);
+    sut = new DbTransactionController(decorate, db);
   });
 
   it('should open transaction', async () => {
@@ -32,5 +38,14 @@ describe('DbTransactionController', () => {
 
     expect(db.openTransaction).toHaveBeenCalled();
     expect(db.openTransaction).toHaveBeenCalledTimes(1);
+  });
+
+  it('should execute decorate', async () => {
+    const params = { any: 'any' };
+
+    await sut.perform(params);
+
+    expect(decorate.perform).toHaveBeenCalledWith(params);
+    expect(decorate.perform).toHaveBeenCalledTimes(1);
   });
 });
