@@ -14,7 +14,7 @@ export abstract class Controller<T = any> {
 
       return response;
     } catch (error) {
-      return serverError(error);
+      return serverError(error as Error);
     }
   }
 

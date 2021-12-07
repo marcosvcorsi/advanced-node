@@ -1,41 +1,9 @@
 import { mock, MockProxy } from 'jest-mock-extended';
 
+import { DbTransaction } from '@/application/contracts';
 import { Controller } from '@/application/controllers';
+import { DbTransactionController } from '@/application/decorators';
 import { HttpResponse } from '@/application/helpers';
-
-interface DbTransaction {
-  openTransaction: () => Promise<void>;
-  closeTransaction: () => Promise<void>;
-  commit: () => Promise<void>;
-  rollback: () => Promise<void>;
-}
-
-class DbTransactionController extends Controller {
-  constructor(
-    private readonly decorate: Controller,
-    private readonly db: DbTransaction,
-  ) {
-    super();
-  }
-
-  async perform(httpRequest: any): Promise<HttpResponse> {
-    await this.db.openTransaction();
-
-    try {
-      const httpResponse = await this.decorate.perform(httpRequest);
-
-      await this.db.commit();
-
-      return httpResponse;
-    } catch (error) {
-      await this.db.rollback();
-
-      throw error;
-    } finally {
-      await this.db.closeTransaction();
-    }
-  }
-}
 
 describe('DbTransactionController', () => {
   let db: MockProxy<DbTransaction>;
