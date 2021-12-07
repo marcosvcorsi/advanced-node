@@ -116,7 +116,7 @@ describe('ChangeProfilePicture', () => {
     userProfileRepository.savePicture.mockRejectedValueOnce(new Error('any_error'));
     expect.assertions(2);
 
-    await sut({ id, file: { buffer, mimeType: 'image/png' } }).catch(() => {
+    sut({ id, file: { buffer, mimeType: 'image/png' } }).catch(() => {
       expect(fileStorage.delete).toHaveBeenLastCalledWith({ filename: `${uuid}.png` });
       expect(fileStorage.delete).toHaveBeenCalledTimes(1);
     });
@@ -126,7 +126,7 @@ describe('ChangeProfilePicture', () => {
     userProfileRepository.savePicture.mockRejectedValueOnce(new Error('any_error'));
     expect.assertions(1);
 
-    await sut({ id, file: undefined }).catch(() => {
+    sut({ id, file: undefined }).catch(() => {
       expect(fileStorage.delete).not.toHaveBeenCalled();
     });
   });
@@ -134,6 +134,6 @@ describe('ChangeProfilePicture', () => {
   it('should throws if SaveUserPictureRepository throws', async () => {
     userProfileRepository.savePicture.mockRejectedValueOnce(new Error('any_error'));
 
-    await expect(sut({ id, file })).rejects.toThrow('any_error');
+    await expect(sut({ id, file: undefined })).rejects.toThrow('any_error');
   });
 });

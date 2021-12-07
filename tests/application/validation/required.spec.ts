@@ -17,11 +17,11 @@ describe('Required', () => {
   });
 
   it('should return an RequiredFieldError if value is undefined', () => {
-    const sut = new Required(undefined as any, fieldName);
+    const sut = new Required(undefined as any);
 
     const result = sut.validate();
 
-    expect(result).toEqual(new RequiredFieldError(fieldName));
+    expect(result).toEqual(new RequiredFieldError());
   });
 
   it('should return undefined if value is truthy', () => {
