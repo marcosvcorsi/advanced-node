@@ -9,10 +9,12 @@ import {
   Repository,
 } from 'typeorm';
 
+import { DbTransaction } from '@/application/contracts';
+
 import { TransactionNotFoundError } from '.';
 import { ConnectionNotFoundError } from './errors';
 
-export class PgConnection {
+export class PgConnection implements DbTransaction {
   private static instance?: PgConnection;
   private connection?: Connection;
   private query?: QueryRunner;
